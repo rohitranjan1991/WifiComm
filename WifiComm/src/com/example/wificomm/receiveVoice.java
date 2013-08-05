@@ -47,10 +47,11 @@ public class receiveVoice extends Thread {
 	 */
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
+		receiveAndPlayVoice();
 		super.run();
 	}
-	public void ReceiveAndPlayVoice()
+	
+	public void receiveAndPlayVoice()
 	{
 		
 		DatagramSocket socket = null ;
@@ -97,7 +98,9 @@ public class receiveVoice extends Thread {
 		at.release();
 		}
 		catch(Exception e)
-		{}
+		{
+			
+		}
 		MainHandler.sendMessage(MainHandler.obtainMessage(4,0,0, "Disconnect"));
 		socket.close();
 		

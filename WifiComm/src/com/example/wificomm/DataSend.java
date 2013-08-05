@@ -94,8 +94,7 @@ public class DataSend extends Thread {
 			// socket.bind(null);
 			// ////////////////////////////////////////////////////////////////////////////////////////////////
 			if (purpose.contentEquals("Initiate Call !!"))
-			// ////////////////////////////////initiating
-			// call/////////////////////////////////
+			// ////////////////////////////////initiating call/////////////////////////////////
 			{
 				InitiateCall();
 			}
@@ -113,7 +112,7 @@ public class DataSend extends Thread {
 			// ////////////////////////////////Main
 			// Calling/////////////////////////////////
 			else if (purpose.contentEquals("Main Call")) {
-				
+				sendVoice();
 		}
 		
 	} catch (Exception e) {
@@ -138,7 +137,7 @@ public class DataSend extends Thread {
 	
 	public void InitiateCall()
 	{
-
+		
 		Socket socket = new Socket();
 		PrintWriter out = null;
 
@@ -183,7 +182,7 @@ public class DataSend extends Thread {
 							"inform receiver"));
 				}*/
 			mainHandler.sendMessage(mainHandler
-					.obtainMessage(3,2,0, report));
+					.obtainMessage(3,1,0, report));
 
 			if (socket != null) {
 				if (socket.isConnected()) {
@@ -199,7 +198,8 @@ public class DataSend extends Thread {
 	//Reply for Incoming call
 	
 	public void reply(Boolean reply)
-	{
+	{	
+		Boolean result=false;
 		Socket socket = new Socket();
 		PrintWriter out = null;
 
@@ -221,10 +221,10 @@ public class DataSend extends Thread {
 
 			out = new PrintWriter(socket.getOutputStream(), true);
 			out.println("Reply "+(reply?"true":"false"));
-			report = "Call Request Send";
+			result = true;
 
 		} catch (Exception e) {
-			report = "Call Request Not Sent";
+			result = false;
 			e.printStackTrace();
 
 		}
@@ -236,7 +236,7 @@ public class DataSend extends Thread {
 		finally {
 			
 			mainHandler.sendMessage(mainHandler
-					.obtainMessage(3,1,0, report));
+					.obtainMessage(3,2,0, result));
 
 			if (socket != null) {
 				if (socket.isConnected()) {

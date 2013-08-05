@@ -46,6 +46,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	EditText et1;
 	Integer rowNum;
 	DataSend send;
+	private DataSend call;
 	CallRequestAcceptor callReqAcceptor;
 	receiveVoice rVoice;
 	CallManage callManage;
@@ -122,10 +123,12 @@ public class MainActivity extends Activity implements OnClickListener {
 				switch (msg.arg1) {
 				case 0:
 					// from CallRequestAcceptor
+					//from the call receiver side
 					ipCaller = msg.obj.toString();
 
 					AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
-							getApplicationContext());
+							
+							MainActivity.this);
 
 					// set title
 					alertDialogBuilder.setTitle("Incoming Call");
@@ -202,19 +205,20 @@ public class MainActivity extends Activity implements OnClickListener {
 
 					break;
 				case 2:
-					//after reply receive
-					//from sender or initiator side
+					
+					//from receiver
 					reply=(Boolean) msg.obj;
 					
 					if(reply)
 					{
-						//if call accepted
-						//start sending main call
-						send=new DataSend(mHandle, ipAddr, "Main Call");
-						send.start();
 						//start receiving main call
 						rVoice=new receiveVoice(mHandle);
 						rVoice.start();
+						//if call accepted
+						//start sending main call
+						send=new DataSend(mHandle, ipCaller, "Main Call");
+						send.start();
+						
 						
 					}
 					else
@@ -225,8 +229,34 @@ public class MainActivity extends Activity implements OnClickListener {
 					
 					
 					break;
+				case 3:
+					//from caller
+					
+					reply=(Boolean) msg.obj;
+					
+					if(reply)
+					{
+						//start receiving main call
+						rVoice=new receiveVoice(mHandle);
+						rVoice.start();
+						//if call accepted
+						//start sending main call
+						send=new DataSend(mHandle, ipAddr, "Main Call");
+						send.start();
+						
+						
+					}
+					else
+					{//if call rejected
+						
+						startCallAcceptor();
+					}
+					
+					break;
 				}
-		
+				
+					
+					
 				break;
 			case 4:
 				//when call on progress
@@ -337,6 +367,8 @@ public class MainActivity extends Activity implements OnClickListener {
 	public class MyListAdapter extends ArrayAdapter<DeviceList> implements
 			OnClickListener {
 
+		
+
 		@Override
 		public void notifyDataSetChanged() {
 
@@ -396,10 +428,10 @@ public class MainActivity extends Activity implements OnClickListener {
 			case R.id.bCall:
 				connectionrow.findViewById(R.id.bCall).setEnabled(false);
 				connectionrow.findViewById(R.id.bDisconnect).setEnabled(true);
-				/*
-				 * call = new DataSend(mHandle, ipAddr, "Initiate Call !!");
-				 * call.start();
-				 */
+				
+				  call = new DataSend(mHandle, ipAddr, "Initiate Call !!");
+				  call.start();
+				 
 
 				break;
 			case R.id.bDisconnect:
@@ -467,7 +499,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		int ip = wifiInfo.getIpAddress();
 		String ipAddress = Formatter.formatIpAddress(ip);
 		for (int i = 0; i < 256; i++) {
-			String currIp = "192.168.43." + i;
+			String currIp = "192.168.2." + i;
 
 			if (!currIp.contentEquals(ipAddress)) {
 				new wifiScanSend(mHandle, "DeviceInfo request", currIp,

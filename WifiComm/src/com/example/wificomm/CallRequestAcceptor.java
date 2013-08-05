@@ -41,7 +41,7 @@ public class CallRequestAcceptor extends Thread{
 	
 
 	public CallRequestAcceptor(Handler MainHandler) {
-		MainHandler=this.MainHandler;
+		this.MainHandler=MainHandler;
 		MainHandler.sendMessage(MainHandler.obtainMessage(0, 1, 0, mHandle));
 		
 	}

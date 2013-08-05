@@ -32,7 +32,7 @@ public class CallReplyAcceptor extends Thread{
 
 	
 	public CallReplyAcceptor(Handler MainHandler) {
-		MainHandler=this.MainHandler;
+		this.MainHandler=MainHandler;
 		MainHandler.sendMessage(MainHandler.obtainMessage(0, 1, 0, mHandle));
 		waitForReply=true;
 		MainInterupt=false;
@@ -66,7 +66,7 @@ public class CallReplyAcceptor extends Thread{
 					//ReceiverIP = client.getInetAddress().getHostAddress();
 					client.close();
 					
-					MainHandler.sendMessage(MainHandler.obtainMessage(3, 2, 0, true));
+					MainHandler.sendMessage(MainHandler.obtainMessage(3, 3, 0, true));
 
 					//return true;
 
