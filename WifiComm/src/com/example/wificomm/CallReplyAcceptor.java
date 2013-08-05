@@ -1,6 +1,7 @@
 package com.example.wificomm;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -18,7 +19,8 @@ public class CallReplyAcceptor extends Thread{
 			
 			
 			if (msg.obj.toString().contentEquals("Stop"))
-			{		
+			{			
+				waitForReply=false;
 			}
 			
 			
@@ -47,12 +49,13 @@ public class CallReplyAcceptor extends Thread{
 
 
 	private void waitForReply() {
+		Socket client = null;
+		String res = null;
 		try {
 			serverSocket = new ServerSocket(7690);
 			serverSocket.setSoTimeout(10000);
 
-			Socket client = null;
-			String res = null;
+			
 
 			while (waitForReply && !MainInterupt) {
 				try {
@@ -64,6 +67,7 @@ public class CallReplyAcceptor extends Thread{
 					res = br.readLine();
 					//callAccept = false;
 					//ReceiverIP = client.getInetAddress().getHostAddress();
+					serverSocket.close();
 					client.close();
 					
 					MainHandler.sendMessage(MainHandler.obtainMessage(3, 3, 0, true));
@@ -71,11 +75,19 @@ public class CallReplyAcceptor extends Thread{
 					//return true;
 
 				} catch (Exception e) {
-
+					waitForReply=false;
+					serverSocket.close();
+					client.close();
 				}
 			}
 		} catch (Exception e1) {
-			// TODO Auto-generated catch block
+			try {
+				serverSocket.close();
+				client.close();
+			} catch (IOException e) {
+					e.printStackTrace();
+			}
+			
 			e1.printStackTrace();
 		}
 		//return false;

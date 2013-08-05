@@ -199,13 +199,15 @@ public class MainActivity extends Activity implements OnClickListener {
 
 				case 1:
 					// after call request send
+					//3,1,0
 					CallRequestSent = msg.obj.toString().contentEquals(
 							"Call Request Sent");
-
+					if(CallRequestSent){
 					callRequestHandler.sendMessage(callRequestHandler
 							.obtainMessage(0, "Stop"));
 					callReplyObject = new CallReplyAcceptor(mHandle);
 					callReplyObject.start();
+					}
 
 					break;
 				case 2:
@@ -435,7 +437,7 @@ public class MainActivity extends Activity implements OnClickListener {
 			case R.id.bCall:
 				connectionrow.findViewById(R.id.bCall).setEnabled(false);
 				connectionrow.findViewById(R.id.bDisconnect).setEnabled(true);
-
+				
 				call = new DataSend(mHandle, ipAddr, "Initiate Call !!");
 				call.start();
 				break;

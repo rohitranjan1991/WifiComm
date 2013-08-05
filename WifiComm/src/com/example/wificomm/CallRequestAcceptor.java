@@ -58,7 +58,7 @@ public class CallRequestAcceptor extends Thread{
 	
 
 	public Boolean start_handshake() {
-		try {
+		try {serverSocket=null;
 			serverSocket = new ServerSocket(7680);
 			serverSocket.setSoTimeout(1000);
 
@@ -93,10 +93,11 @@ public class CallRequestAcceptor extends Thread{
 		}
 		if(serverSocket!=null)
 			try {
+				if(!serverSocket.isClosed())
+				{
 				serverSocket.close();
-				serverSocket=null;
+				serverSocket=null;}
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		return false;

@@ -87,9 +87,10 @@ public class receiveVoice extends Thread {
 			}
 			// end of inner buff
 		} // end inner while
-		
+		if(!socket.isClosed()){
 		socket.close();
-		socket = null;// end if
+		socket = null;
+		}// end if
 		// at.release();
 
 	
@@ -98,8 +99,11 @@ public class receiveVoice extends Thread {
 		at.release();
 		}
 		catch(Exception e)
-		{
-			e.printStackTrace();
+		{if(!socket.isClosed())
+			{socket.close();
+			socket = null;
+			}
+		e.printStackTrace();
 		}
 		MainHandler.sendMessage(MainHandler.obtainMessage(4,1,0, "Disconnect"));
 		//socket.close();
