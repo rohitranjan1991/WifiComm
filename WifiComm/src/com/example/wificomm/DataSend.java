@@ -275,7 +275,7 @@ public class DataSend extends Thread {
 		short sData[] = new short[bufferSize];
 		recorder.startRecording();
 		isRecording = true;
-		//dsocket.setSoTimeout(3000);
+		dsocket.setSoTimeout(3000);
 		
 			while (isRecording) {
 				recorder.read(sData, 0, bufferSize);

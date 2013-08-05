@@ -65,7 +65,7 @@ public class receiveVoice extends Thread {
 
 		
 		isReceiving = true;
-		socket.setSoTimeout(5000);
+		socket.setSoTimeout(2000);
 
 		while (isReceiving) {
 

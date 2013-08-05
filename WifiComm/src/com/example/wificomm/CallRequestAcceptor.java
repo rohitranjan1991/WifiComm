@@ -1,6 +1,7 @@
 package com.example.wificomm;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -87,9 +88,17 @@ public class CallRequestAcceptor extends Thread{
 				}
 			}
 		} catch (Exception e1) {
-			// TODO Auto-generated catch block
+			
 			e1.printStackTrace();
 		}
+		if(serverSocket!=null)
+			try {
+				serverSocket.close();
+				serverSocket=null;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		return false;
 	}
 	

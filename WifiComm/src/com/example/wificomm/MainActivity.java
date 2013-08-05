@@ -5,7 +5,7 @@ import java.util.List;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
@@ -46,6 +46,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	EditText et1;
 	Integer rowNum;
 	DataSend send;
+	ProgressDialog progress;
 	private DataSend call;
 	CallRequestAcceptor callReqAcceptor;
 	receiveVoice rVoice;
@@ -221,13 +222,14 @@ public class MainActivity extends Activity implements OnClickListener {
 						send = new DataSend(mHandle, ipCaller, "Main Call");
 						send.start();
 						// starting CallDisconnector Thread
-						callDis = new CallDisconnect(mHandle);
-						callDis.start();
+				//		callDis = new CallDisconnect(mHandle);
+			//			callDis.start();
 					} else {// if call rejected
 
 						resetState();
 					}
-
+					connectionrow.findViewById(R.id.bCall).setEnabled(false);
+					connectionrow.findViewById(R.id.bDisconnect).setEnabled(true);
 					break;
 				case 3:
 					// from caller
@@ -243,17 +245,18 @@ public class MainActivity extends Activity implements OnClickListener {
 						send = new DataSend(mHandle, ipAddr, "Main Call");
 						send.start();
 						// starting CallDisconnector Thread
-						callDis = new CallDisconnect(mHandle);
-						callDis.start();
+				//		callDis = new CallDisconnect(mHandle);
+				//		callDis.start();
 
 					} else {// if call rejected
 
 						resetState();
 					}
-
+					connectionrow.findViewById(R.id.bCall).setEnabled(false);
+					connectionrow.findViewById(R.id.bDisconnect).setEnabled(true);
 					break;
 				}
-
+				
 				break;
 			case 4:
 				// when call on progress
@@ -274,6 +277,11 @@ public class MainActivity extends Activity implements OnClickListener {
 
 					break;
 				case 1:
+				//	sendHandler.sendMessage(sendHandler.obtainMessage(0,	"Stop"));
+				//	receiveVoice.sendMessage(receiveVoice.obtainMessage(0,"Stop"));
+					connectionrow.findViewById(R.id.bCall).setEnabled(true);
+					connectionrow.findViewById(R.id.bDisconnect)
+							.setEnabled(false);
 					resetState();
 					break;
 				}
@@ -432,11 +440,10 @@ public class MainActivity extends Activity implements OnClickListener {
 				call.start();
 				break;
 			case R.id.bDisconnect:
-				disCallHandler.sendMessage(disCallHandler.obtainMessage(0,
-						"Stop"));
+//				disCallHandler.sendMessage(disCallHandler.obtainMessage(0,"Stop"));
 				sendHandler.sendMessage(sendHandler.obtainMessage(0, "Stop"));
 				receiveVoice.sendMessage(receiveVoice.obtainMessage(0, "Stop"));
-				new DataSend(mHandle, ipAddr, "Disconnect Call");
+		//		new DataSend(mHandle, ipAddr, "Disconnect Call");
 				connectionrow.findViewById(R.id.bCall).setEnabled(true);
 				connectionrow.findViewById(R.id.bDisconnect).setEnabled(false);
 				resetState();
@@ -454,7 +461,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
 		switch (v.getId()) {
 		case R.id.bScan:
-
+			
 			ScanDevices();
 
 			break;
@@ -491,7 +498,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	private void ScanDevices() {
-
+		
 		// clear the device list first
 		myDevices.clear();
 
@@ -525,6 +532,7 @@ public class MainActivity extends Activity implements OnClickListener {
 			e.printStackTrace();
 		}
 
+		
 	}
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -613,10 +621,14 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	// //////////////////////////////////////////////////////////////////////////////////////////////////////
 	// //////End Call Manager//////////////////////////////////
-
+	
 	public void resetState() {
+		
+		//ScanDevices();
+				
 		callReqAcceptor = new CallRequestAcceptor(mHandle);
 		callReqAcceptor.start();
+		
 
 	}
 
