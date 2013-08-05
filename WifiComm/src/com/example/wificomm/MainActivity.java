@@ -41,8 +41,8 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	Button bCall, bDisconnect, bScan, bIterate;
 	TextView name, ip;
-	Handler recHandler, sendHandler, CallManage;
-	Handler callRequestHandler,callReply,receiveVoice;
+	Handler recHandler, sendHandler, CallManage, disCallHandler;
+	Handler callRequestHandler, callReply, receiveVoice;
 	EditText et1;
 	Integer rowNum;
 	DataSend send;
@@ -52,10 +52,10 @@ public class MainActivity extends Activity implements OnClickListener {
 	CallManage callManage;
 	View connectionrow;
 	String ipAddr, ipCaller;
-
+	CallDisconnect callDis;
 	private int oldAudioMode;
 	private int oldRingerMode;
-	private boolean isSpeakerPhoneOn,reply=false;
+	private boolean isSpeakerPhoneOn, reply = false;
 
 	private SensorManager mSensorManager;
 	private Boolean CallRequestSent = false;
@@ -68,7 +68,6 @@ public class MainActivity extends Activity implements OnClickListener {
 	private AudioManager audioManager;
 	// //////////////////////////////////////////////////////////////////////////////////////////////////////////
 	final Handler mHandle = new Handler() {
-	
 
 		@Override
 		public void handleMessage(Message msg) {
@@ -88,10 +87,13 @@ public class MainActivity extends Activity implements OnClickListener {
 					break;
 
 				case 4:
-					callReply=(Handler) msg.obj;
+					callReply = (Handler) msg.obj;
 					break;
 				case 5:
-					receiveVoice=(Handler) msg.obj;
+					receiveVoice = (Handler) msg.obj;
+					break;
+				case 6:
+					disCallHandler = (Handler) msg.obj;
 					break;
 				}
 				break;
@@ -123,12 +125,12 @@ public class MainActivity extends Activity implements OnClickListener {
 				switch (msg.arg1) {
 				case 0:
 					// from CallRequestAcceptor
-					//from the call receiver side
+					// from the call receiver side
 					ipCaller = msg.obj.toString();
 
 					AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
-							
-							MainActivity.this);
+
+					MainActivity.this);
 
 					// set title
 					alertDialogBuilder.setTitle("Incoming Call");
@@ -195,85 +197,84 @@ public class MainActivity extends Activity implements OnClickListener {
 					break;
 
 				case 1:
-					//after call request send 
+					// after call request send
 					CallRequestSent = msg.obj.toString().contentEquals(
 							"Call Request Sent");
-					
-					callRequestHandler.sendMessage(callRequestHandler.obtainMessage(0,"Stop"));
-					callReplyObject =new CallReplyAcceptor(mHandle);
+
+					callRequestHandler.sendMessage(callRequestHandler
+							.obtainMessage(0, "Stop"));
+					callReplyObject = new CallReplyAcceptor(mHandle);
 					callReplyObject.start();
 
 					break;
 				case 2:
-					
-					//from receiver
-					reply=(Boolean) msg.obj;
-					
-					if(reply)
-					{
-						//start receiving main call
-						rVoice=new receiveVoice(mHandle);
+
+					// from receiver
+					reply = (Boolean) msg.obj;
+
+					if (reply) {
+						// start receiving main call
+						rVoice = new receiveVoice(mHandle);
 						rVoice.start();
-						//if call accepted
-						//start sending main call
-						send=new DataSend(mHandle, ipCaller, "Main Call");
+						// if call accepted
+						// start sending main call
+						send = new DataSend(mHandle, ipCaller, "Main Call");
 						send.start();
-						
-						
+						// starting CallDisconnector Thread
+						callDis = new CallDisconnect(mHandle);
+						callDis.start();
+					} else {// if call rejected
+
+						resetState();
 					}
-					else
-					{//if call rejected
-						
-						startCallAcceptor();
-					}
-					
-					
+
 					break;
 				case 3:
-					//from caller
-					
-					reply=(Boolean) msg.obj;
-					
-					if(reply)
-					{
-						//start receiving main call
-						rVoice=new receiveVoice(mHandle);
+					// from caller
+
+					reply = (Boolean) msg.obj;
+
+					if (reply) {
+						// start receiving main call
+						rVoice = new receiveVoice(mHandle);
 						rVoice.start();
-						//if call accepted
-						//start sending main call
-						send=new DataSend(mHandle, ipAddr, "Main Call");
+						// if call accepted
+						// start sending main call
+						send = new DataSend(mHandle, ipAddr, "Main Call");
 						send.start();
-						
-						
+						// starting CallDisconnector Thread
+						callDis = new CallDisconnect(mHandle);
+						callDis.start();
+
+					} else {// if call rejected
+
+						resetState();
 					}
-					else
-					{//if call rejected
-						
-						startCallAcceptor();
-					}
-					
+
 					break;
 				}
-				
-					
-					
+
 				break;
 			case 4:
-				//when call on progress
-				switch(msg.arg1)
-				{
+				// when call on progress
+				switch (msg.arg1) {
 				case 0:
-					
-					String ret=msg.obj.toString();
-					if(ret.contentEquals("Disconnect"))
-					{
-						sendHandler.sendMessage(sendHandler.obtainMessage(0, "Disconnect"));
-						
-						
-						startCallAcceptor();
-						
+					Boolean disconnect = (Boolean) msg.obj;
+					// String ret=msg.obj.toString();
+					if (disconnect) {
+						sendHandler.sendMessage(sendHandler.obtainMessage(0,
+								"Stop"));
+						receiveVoice.sendMessage(receiveVoice.obtainMessage(0,
+								"Stop"));
+						connectionrow.findViewById(R.id.bCall).setEnabled(true);
+						connectionrow.findViewById(R.id.bDisconnect)
+								.setEnabled(false);
+						resetState();
 					}
-					
+
+					break;
+				case 1:
+					resetState();
 					break;
 				}
 				break;
@@ -348,8 +349,8 @@ public class MainActivity extends Activity implements OnClickListener {
 
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		callManage = new CallManage(mHandle, mSensorManager);
-		
-		callReqAcceptor=new CallRequestAcceptor(mHandle);
+
+		callReqAcceptor = new CallRequestAcceptor(mHandle);
 		callReqAcceptor.start();
 
 	}
@@ -366,8 +367,6 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	public class MyListAdapter extends ArrayAdapter<DeviceList> implements
 			OnClickListener {
-
-		
 
 		@Override
 		public void notifyDataSetChanged() {
@@ -428,17 +427,19 @@ public class MainActivity extends Activity implements OnClickListener {
 			case R.id.bCall:
 				connectionrow.findViewById(R.id.bCall).setEnabled(false);
 				connectionrow.findViewById(R.id.bDisconnect).setEnabled(true);
-				
-				  call = new DataSend(mHandle, ipAddr, "Initiate Call !!");
-				  call.start();
-				 
 
+				call = new DataSend(mHandle, ipAddr, "Initiate Call !!");
+				call.start();
 				break;
 			case R.id.bDisconnect:
-				
-				sendHandler.sendMessage(sendHandler.obtainMessage(0, "Disconnect"));
+				disCallHandler.sendMessage(disCallHandler.obtainMessage(0,
+						"Stop"));
+				sendHandler.sendMessage(sendHandler.obtainMessage(0, "Stop"));
+				receiveVoice.sendMessage(receiveVoice.obtainMessage(0, "Stop"));
+				new DataSend(mHandle, ipAddr, "Disconnect Call");
 				connectionrow.findViewById(R.id.bCall).setEnabled(true);
 				connectionrow.findViewById(R.id.bDisconnect).setEnabled(false);
+				resetState();
 				break;
 			}
 
@@ -528,12 +529,9 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// / call manage
+
+	// start callAcceptor
 	
-	//start callAcceptor
-public void startCallAcceptor()
-{
-	callReqAcceptor=new CallRequestAcceptor(mHandle);
-	callReqAcceptor.start();}
 	public class CallManage extends Thread implements SensorEventListener {
 
 		/*
@@ -615,5 +613,11 @@ public void startCallAcceptor()
 
 	// //////////////////////////////////////////////////////////////////////////////////////////////////////
 	// //////End Call Manager//////////////////////////////////
+
+	public void resetState() {
+		callReqAcceptor = new CallRequestAcceptor(mHandle);
+		callReqAcceptor.start();
+
+	}
 
 }

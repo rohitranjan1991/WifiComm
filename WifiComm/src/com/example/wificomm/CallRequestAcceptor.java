@@ -49,14 +49,14 @@ public class CallRequestAcceptor extends Thread{
 	
 	@Override
 	public void run() {
-		Handshake();
+		start_handshake();
 		super.run();
 	}
 	
 	
 	
 
-	public Boolean Handshake() {
+	public Boolean start_handshake() {
 		try {
 			serverSocket = new ServerSocket(7680);
 			serverSocket.setSoTimeout(1000);

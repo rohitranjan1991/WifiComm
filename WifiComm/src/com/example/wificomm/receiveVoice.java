@@ -65,7 +65,7 @@ public class receiveVoice extends Thread {
 
 		
 		isReceiving = true;
-		socket.setSoTimeout(2000);
+		socket.setSoTimeout(5000);
 
 		while (isReceiving) {
 
@@ -99,10 +99,10 @@ public class receiveVoice extends Thread {
 		}
 		catch(Exception e)
 		{
-			
+			e.printStackTrace();
 		}
-		MainHandler.sendMessage(MainHandler.obtainMessage(4,0,0, "Disconnect"));
-		socket.close();
+		MainHandler.sendMessage(MainHandler.obtainMessage(4,1,0, "Disconnect"));
+		//socket.close();
 		
 		
 		

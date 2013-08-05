@@ -66,8 +66,7 @@ public class DataSend extends Thread {
 		public void handleMessage(Message msg) {
 			if (msg.obj.toString().contentEquals("Stop"))
 				isRecording = false;
-			if (msg.obj.toString().contentEquals("Disconnect"))
-				isRecording = false;
+			
 		}
 	};
 
@@ -113,7 +112,11 @@ public class DataSend extends Thread {
 			// Calling/////////////////////////////////
 			else if (purpose.contentEquals("Main Call")) {
 				sendVoice();
-		}
+			}
+			else if(purpose.contentEquals("Disconnect Call"))
+			{
+				disconnectCall();
+			}
 		
 	} catch (Exception e) {
 		e.printStackTrace();
@@ -301,10 +304,62 @@ public class DataSend extends Thread {
 		// out.println("Finally !!!");
 		}
 		catch(Exception e)
-		{}
+		{
+			e.printStackTrace();
+		}
 
 	// Thread.currentThread().interrupt();	
 	}
+	
+	///send disconnect call message 
+	public void disconnectCall()
+	{	
+		Boolean result=false;
+		Socket socket = new Socket();
+		PrintWriter out = null;
+
+		try {
+			
+			
+			socket.bind(null);
+
+			socket.connect((new InetSocketAddress(ip, 7691)), 2000);
+
+			
+
+			out = new PrintWriter(socket.getOutputStream(), true);
+			out.println("Disconnect Call");
+			result = true;
+
+		} catch (Exception e) {
+			result = false;
+			e.printStackTrace();
+
+		}
+
+		/**
+		 * Clean up any open sockets when done transferring or if an
+		 * exception occurred.
+		 */
+		finally {
+			
+		
+
+			if (socket != null) {
+				if (socket.isConnected()) {
+					try {
+						socket.close();
+					} catch (IOException e) {
+						// catch logic
+					}
+				}
+			}
+		}
+	}
+	
+	
+	
+	
 
 	// ////////////////////////////////call
 	// completed/////////////////////////////////
