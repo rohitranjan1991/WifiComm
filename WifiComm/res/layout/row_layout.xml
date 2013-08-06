@@ -2,52 +2,72 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" >
+    android:orientation="horizontal" >
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="50dp"
-        android:id="@+id/text"
-        android:orientation="horizontal" >
+        android:orientation="vertical" >
 
-        <TextView
-            android:id="@+id/Name"
+        <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="TextView" />
-
-        <TextView
-            android:id="@+id/IPAddress"
-            android:layout_marginLeft="50dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="TextView" />
+            android:src="@drawable/defaultperson" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"
-        android:weightSum="100"
-        android:id="@+id/buttons"
         android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        android:orientation="vertical"
+        android:id="@+id/topText" >
 
-        <Button
-            android:id="@+id/bCall"
-            android:layout_weight="50"
-            android:layout_marginLeft="50dp"
-            android:layout_width="fill_parent"
+        <LinearLayout
+            android:id="@+id/text"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Call !!" />
+            android:layout_marginLeft="50dp"
+            android:orientation="horizontal" >
 
-        <Button
-            android:id="@+id/bDisconnect"
-            android:enabled="false"
-            android:layout_weight="50"
-            android:layout_marginLeft="50dp"
-            android:layout_width="fill_parent"
+            <TextView
+                android:id="@+id/Name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TextView" />
+
+            <TextView
+                android:id="@+id/IPAddress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="50dp"
+                android:text="TextView" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/buttons"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Disconnect !!" />
+            android:orientation="horizontal"
+            android:weightSum="100" >
+
+            <Button
+                android:id="@+id/bCall"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="50dp"
+                android:layout_weight="50"
+                android:text="Call !!" 
+
+                android:src="@drawable/callbutton"/>
+
+            <Button
+                android:id="@+id/bDisconnect"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="50dp"
+                android:layout_weight="50"
+                android:enabled="false"
+                android:text="Disconnect !!" />
+        </LinearLayout>
     </LinearLayout>
 
 </LinearLayout>

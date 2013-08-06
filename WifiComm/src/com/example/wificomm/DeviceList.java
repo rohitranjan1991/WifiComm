@@ -4,6 +4,8 @@ public class DeviceList {
 	
 	private String name;
 	private String IP;
+	private Boolean onCall=false;
+	
 	
 	public DeviceList(String name,String IP) {
 		//super();
@@ -38,6 +40,16 @@ public class DeviceList {
 	public void setIP(String iP) {
 		IP = iP;
 	}
+
+	public Boolean onCall() {
+		return onCall;
+	}
+
+	public void setOnCallState(Boolean callState) {
+		this.onCall = callState;
+	}
+	
+	
 	
 		
 	 

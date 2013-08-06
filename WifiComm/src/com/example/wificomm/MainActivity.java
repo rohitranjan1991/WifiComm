@@ -54,6 +54,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	View connectionrow;
 	String ipAddr, ipCaller;
 	CallDisconnect callDis;
+	int currentCallerPos = -1;
 	private int oldAudioMode;
 	private int oldRingerMode;
 	private boolean isSpeakerPhoneOn, reply = false;
@@ -128,7 +129,6 @@ public class MainActivity extends Activity implements OnClickListener {
 					// from CallRequestAcceptor
 					// from the call receiver side
 					ipCaller = msg.obj.toString();
-
 					AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
 
 					MainActivity.this);
@@ -144,39 +144,48 @@ public class MainActivity extends Activity implements OnClickListener {
 									new DialogInterface.OnClickListener() {
 										public void onClick(
 												DialogInterface dialog, int id) {
-											View v = findRow(ipCaller);
-											
-											if (v != null) {
-												LinearLayout v1=null;
-												 v1 = (LinearLayout)v
-														.findViewById(R.id.buttons);
-												 if(v1!=null){
-												Button call = (Button) v1
-														.findViewById(R.id.bCall);
-												Button Dissconect = (Button) v1
-														.findViewById(R.id.bDisconnect);
-												call.setEnabled(false);
-												Dissconect.setEnabled(true);
-												connectionrow = v1;
-												 }
+											currentCallerPos = findRow(ipCaller);
+
+											if (currentCallerPos != -1) {
+												myDevices.get(currentCallerPos)
+														.setOnCallState(true);
+
+												connectionrow = list
+														.getAdapter()
+														.getView(
+																currentCallerPos,
+																findViewById(R.layout.row_layout),
+																(ViewGroup) findViewById(R.id.listView1));
 
 											} else {
-												View v1=null;
+												View v1 = null;
 												myDevices.add(new DeviceList(
 														"Unknown", ipCaller));
 												adapter.notifyDataSetChanged();
-												View v0 = findRow(ipCaller);
-												 v1 = v0
-														.findViewById(R.id.buttons);
-												Button call = (Button) v1
-														.findViewById(R.id.bCall);
-												Button Dissconect = (Button) v1
-														.findViewById(R.id.bDisconnect);
-												call.setEnabled(false);
-												Dissconect.setEnabled(true);
-												connectionrow = v1;
+												try {
+													Thread.sleep(500);
+												} catch (InterruptedException e) {
+													// TODO Auto-generated catch
+													// block
+													e.printStackTrace();
+												}
+												currentCallerPos = findRow(ipCaller);
+
+												if (currentCallerPos != -1) {
+
+													myDevices.get(
+															currentCallerPos)
+															.setOnCallState(
+																	true);
+													connectionrow = list
+															.getAdapter()
+															.getView(
+																	currentCallerPos,
+																	findViewById(R.layout.row_layout),
+																	(ViewGroup) findViewById(R.id.listView1));
+												}
 											}
-									//		adapter.notifyDataSetChanged();
+											adapter.notifyDataSetChanged();
 											send = new DataSend(mHandle,
 													ipCaller, "Reply True");
 											send.start();
@@ -203,14 +212,14 @@ public class MainActivity extends Activity implements OnClickListener {
 
 				case 1:
 					// after call request send
-					//3,1,0
+					// 3,1,0
 					CallRequestSent = msg.obj.toString().contentEquals(
 							"Call Request Sent");
-					if(CallRequestSent){
-					callRequestHandler.sendMessage(callRequestHandler
-							.obtainMessage(0, "Stop"));
-					callReplyObject = new CallReplyAcceptor(mHandle);
-					callReplyObject.start();
+					if (CallRequestSent) {
+						callRequestHandler.sendMessage(callRequestHandler
+								.obtainMessage(0, "Stop"));
+						callReplyObject = new CallReplyAcceptor(mHandle);
+						callReplyObject.start();
 					}
 
 					break;
@@ -228,14 +237,13 @@ public class MainActivity extends Activity implements OnClickListener {
 						send = new DataSend(mHandle, ipCaller, "Main Call");
 						send.start();
 						// starting CallDisconnector Thread
-				//		callDis = new CallDisconnect(mHandle);
-			//			callDis.start();
+						// callDis = new CallDisconnect(mHandle);
+						// callDis.start();
 					} else {// if call rejected
 
 						resetState();
 					}
-					connectionrow.findViewById(R.id.bCall).setEnabled(false);
-					connectionrow.findViewById(R.id.bDisconnect).setEnabled(true);
+
 					break;
 				case 3:
 					// from caller
@@ -251,49 +259,45 @@ public class MainActivity extends Activity implements OnClickListener {
 						send = new DataSend(mHandle, ipAddr, "Main Call");
 						send.start();
 						// starting CallDisconnector Thread
-				//		callDis = new CallDisconnect(mHandle);
-				//		callDis.start();
+						// callDis = new CallDisconnect(mHandle);
+						// callDis.start();
 
 					} else {// if call rejected
 
 						resetState();
 					}
-					connectionrow.findViewById(R.id.bCall).setEnabled(false);
-					connectionrow.findViewById(R.id.bDisconnect).setEnabled(true);
+
 					break;
 				}
-				
+
 				break;
 			case 4:
 				// when call on progress
 				switch (msg.arg1) {
 				case 0:
-					/*Boolean disconnect = (Boolean) msg.obj;
-					// String ret=msg.obj.toString();
-					if (disconnect) {
-						sendHandler.sendMessage(sendHandler.obtainMessage(0,
-								"Stop"));
-						receiveVoice.sendMessage(receiveVoice.obtainMessage(0,
-								"Stop"));
-						connectionrow.findViewById(R.id.bCall).setEnabled(true);
-						connectionrow.findViewById(R.id.bDisconnect)
-								.setEnabled(false);
-						resetState();
-					}*/
+					/*
+					 * Boolean disconnect = (Boolean) msg.obj; // String
+					 * ret=msg.obj.toString(); if (disconnect) {
+					 * sendHandler.sendMessage(sendHandler.obtainMessage(0,
+					 * "Stop"));
+					 * receiveVoice.sendMessage(receiveVoice.obtainMessage(0,
+					 * "Stop"));
+					 * connectionrow.findViewById(R.id.bCall).setEnabled(true);
+					 * connectionrow.findViewById(R.id.bDisconnect)
+					 * .setEnabled(false); resetState(); }
+					 */
 
 					break;
 				case 1:
-					try{
-					sendHandler.sendMessage(sendHandler.obtainMessage(0,	"Stop"));
+					try {
+						sendHandler.sendMessage(sendHandler.obtainMessage(0,
+								"Stop"));
+					} catch (Exception e) {
+
 					}
-					catch(Exception e)
-					{
-						
-					}
-					//	receiveVoice.sendMessage(receiveVoice.obtainMessage(0,"Stop"));
-					connectionrow.findViewById(R.id.bCall).setEnabled(true);
-					connectionrow.findViewById(R.id.bDisconnect)
-							.setEnabled(false);
+					myDevices.get(currentCallerPos).setOnCallState(false);
+					// receiveVoice.sendMessage(receiveVoice.obtainMessage(0,"Stop"));
+					adapter.notifyDataSetChanged();
 					resetState();
 					break;
 				}
@@ -305,38 +309,6 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	// //////////////////////////////// X-X-X-X
 
-	/*
-	 * public void ShowDialog(String IP) { final Dialog dialog = new
-	 * Dialog(this); dialog.setContentView(R.layout.customdialog);
-	 * dialog.setTitle("Title...");
-	 * 
-	 * // set the custom dialog components - text, image and button TextView
-	 * Qtext = (TextView) dialog.findViewById(R.id.txtToShow);
-	 * Qtext.setText("Call From "+IP); Button dialogButton = (Button)
-	 * dialog.findViewById(R.id.Button1);
-	 * 
-	 * dialogButton.setOnClickListener(new OnClickListener() {
-	 * 
-	 * @Override public void onClick(View v) { //dialog.dismiss();
-	 * 
-	 * switch(v.getId()) {case R.id.Button1: IsOnCall = true;
-	 * 
-	 * oldAudioMode = audioManager.getMode(); oldRingerMode =
-	 * audioManager.getRingerMode(); isSpeakerPhoneOn =
-	 * audioManager.isSpeakerphoneOn();
-	 * 
-	 * audioManager.setRingerMode(AudioManager.RINGER_MODE_SILENT);
-	 * audioManager.setMode(AudioManager.MODE_IN_CALL);
-	 * 
-	 * audioManager.setSpeakerphoneOn(false); call = new DataSend(mHandle,
-	 * ipCaller, "Main Call"); call.start(); break; case R.id.Button2:
-	 * 
-	 * break;
-	 * 
-	 * } } });
-	 * 
-	 * dialog.show(); }
-	 */
 
 	// ////////////////////////////////////////
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -411,6 +383,13 @@ public class MainActivity extends Activity implements OnClickListener {
 			ip.setText(devList.getIP());
 			bCall = (Button) view.findViewById(R.id.bCall);
 			bDisconnect = (Button) view.findViewById(R.id.bDisconnect);
+			if (devList.onCall()) {
+				bCall.setEnabled(false);
+				bDisconnect.setEnabled(true);
+			} else {
+				bCall.setEnabled(true);
+				bDisconnect.setEnabled(false);
+			}
 			bCall.setOnClickListener(this);
 			bDisconnect.setOnClickListener(this);
 			return view;
@@ -445,19 +424,19 @@ public class MainActivity extends Activity implements OnClickListener {
 			connectionrow = (View) v.getParent();
 			switch (v.getId()) {
 			case R.id.bCall:
-				connectionrow.findViewById(R.id.bCall).setEnabled(false);
-				connectionrow.findViewById(R.id.bDisconnect).setEnabled(true);
-				
+				currentCallerPos = findRow(ipAddr);
+				myDevices.get(currentCallerPos).setOnCallState(true);
+				adapter.notifyDataSetChanged();
+
 				call = new DataSend(mHandle, ipAddr, "Initiate Call !!");
 				call.start();
 				break;
 			case R.id.bDisconnect:
-//				disCallHandler.sendMessage(disCallHandler.obtainMessage(0,"Stop"));
-				//sendHandler.sendMessage(sendHandler.obtainMessage(0, "Stop"));
+				// disCallHandler.sendMessage(disCallHandler.obtainMessage(0,"Stop"));
+				// sendHandler.sendMessage(sendHandler.obtainMessage(0,
+				// "Stop"));
 				receiveVoice.sendMessage(receiveVoice.obtainMessage(0, "Stop"));
-		//		new DataSend(mHandle, ipAddr, "Disconnect Call");
-				connectionrow.findViewById(R.id.bCall).setEnabled(true);
-				connectionrow.findViewById(R.id.bDisconnect).setEnabled(false);
+
 				break;
 			}
 
@@ -472,7 +451,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
 		switch (v.getId()) {
 		case R.id.bScan:
-			
+
 			ScanDevices();
 
 			break;
@@ -486,7 +465,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// find row
-	public View findRow(String str) {
+	public int findRow(String str) {
 		if (list.getCount() != 0) {
 			int i = 0;
 			for (i = 0; i < list.getCount(); i++) {
@@ -494,24 +473,25 @@ public class MainActivity extends Activity implements OnClickListener {
 				View v1 = list.getAdapter().getView(i,
 						findViewById(R.layout.row_layout),
 						(ViewGroup) findViewById(R.id.listView1));
-				TextView v2 = (TextView) v1.findViewById(R.id.text)
-						.findViewById(R.id.IPAddress);
-				
-				Toast.makeText(this, "IP Address of the "+i+" row = "+v2.getText(), Toast.LENGTH_SHORT).show();
-				if (v2.getText().toString().contentEquals(str))
-					return v1;
+				TextView v2 = (TextView) v1.findViewById(R.id.topText)
+						.findViewById(R.id.text).findViewById(R.id.IPAddress);
 
+				// Toast.makeText(this,
+				// "IP Address of the "+i+" row = "+v2.getText(),
+				// Toast.LENGTH_SHORT).show();
+				if (v2.getText().toString().contentEquals(str))
+					return i;
 			}
 
 		}
 
-		return null;
+		return -1;
 	}
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	private void ScanDevices() {
-		
+
 		// clear the device list first
 		myDevices.clear();
 
@@ -545,14 +525,13 @@ public class MainActivity extends Activity implements OnClickListener {
 			e.printStackTrace();
 		}
 
-		
 	}
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// / call manage
 
 	// start callAcceptor
-	
+
 	public class CallManage extends Thread implements SensorEventListener {
 
 		/*
@@ -634,14 +613,13 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	// //////////////////////////////////////////////////////////////////////////////////////////////////////
 	// //////End Call Manager//////////////////////////////////
-	
+
 	public void resetState() {
-		
-		//ScanDevices();
-				
+
+		// ScanDevices();
+
 		callReqAcceptor = new CallRequestAcceptor(mHandle);
 		callReqAcceptor.start();
-		
 
 	}
 
