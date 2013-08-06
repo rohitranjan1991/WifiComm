@@ -509,7 +509,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		int ip = wifiInfo.getIpAddress();
 		String ipAddress = Formatter.formatIpAddress(ip);
 		for (int i = 0; i < 256; i++) {
-			String currIp = "192.168.2." + i;
+			String currIp = "10.0.2." + i;
 
 			if (!currIp.contentEquals(ipAddress)) {
 				new wifiScanSend(mHandle, "DeviceInfo request", currIp,
