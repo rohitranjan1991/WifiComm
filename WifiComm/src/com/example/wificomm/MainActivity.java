@@ -36,8 +36,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.constants.Constants;
-import com.example.duringCall.OnCallActivity;
+import com.wificomm.constants.Constants;
+import com.wificomm.duringCall.OnCallActivity;
 
 public class MainActivity extends Activity implements OnClickListener {
 

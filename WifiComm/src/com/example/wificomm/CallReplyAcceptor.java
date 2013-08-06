@@ -6,7 +6,7 @@ import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import com.example.constants.Constants;
+import com.wificomm.constants.Constants;
 
 import android.os.Handler;
 import android.os.Message;

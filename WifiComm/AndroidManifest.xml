@@ -29,7 +29,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.example.duringCall.OnCallActivity"
+            android:name="com.wificomm.duringCall.OnCallActivity"
             android:screenOrientation="portrait" />
     </application>
 

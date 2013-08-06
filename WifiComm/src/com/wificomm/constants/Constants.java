@@ -1,4 +1,4 @@
-package com.example.constants;
+package com.wificomm.constants;
 
 public class Constants {
 
