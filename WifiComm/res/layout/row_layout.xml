@@ -12,14 +12,14 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/defaultperson" />
+            android:src="@drawable/img1" />
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/topText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:id="@+id/topText" >
+        android:orientation="vertical" >
 
         <LinearLayout
             android:id="@+id/text"
@@ -55,9 +55,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="50dp"
                 android:layout_weight="50"
-                android:text="Call !!" 
-
-                android:src="@drawable/callbutton"/>
+                android:background="@drawable/callbutton" />
 
             <Button
                 android:id="@+id/bDisconnect"
@@ -65,8 +63,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="50dp"
                 android:layout_weight="50"
-                android:enabled="false"
-                android:text="Disconnect !!" />
+                android:background="@drawable/callend"
+                android:enabled="false" />
         </LinearLayout>
     </LinearLayout>
 

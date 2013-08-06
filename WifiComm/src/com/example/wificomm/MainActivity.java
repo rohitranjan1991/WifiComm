@@ -5,9 +5,11 @@ import java.util.List;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -34,6 +36,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.constants.Constants;
+import com.example.duringCall.OnCallActivity;
+
 public class MainActivity extends Activity implements OnClickListener {
 
 	// //////////////////////////////// variables
@@ -57,6 +62,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	int currentCallerPos = -1;
 	private int oldAudioMode;
 	private int oldRingerMode;
+//	public static int callTimeoutTime=10000;
 	private boolean isSpeakerPhoneOn, reply = false;
 
 	private SensorManager mSensorManager;
@@ -138,6 +144,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
 					// set dialog message
 					alertDialogBuilder
+							
 							.setMessage("Call From " + ipCaller)
 							.setCancelable(false)
 							.setPositiveButton("Pick Up!!",
@@ -205,9 +212,8 @@ public class MainActivity extends Activity implements OnClickListener {
 
 					// create alert dialog
 					AlertDialog alertDialog = alertDialogBuilder.create();
-
-					// show it
 					alertDialog.show();
+					timerDelayRemoveDialog(Constants.callTimeoutTime,alertDialog);
 					break;
 
 				case 1:
@@ -268,7 +274,17 @@ public class MainActivity extends Activity implements OnClickListener {
 					}
 
 					break;
+				case 4:
+					reply = (Boolean) msg.obj;
+
+					if (!reply) {
+						resetState();
+					}
+					
+					break;
 				}
+				
+			
 
 				break;
 			case 4:
@@ -456,7 +472,11 @@ public class MainActivity extends Activity implements OnClickListener {
 
 			break;
 		case R.id.bIterate:
-
+			
+			Intent intent = new Intent(this, OnCallActivity.class);
+			intent.putExtra("Value 1", "Delivered");
+			startActivity(intent);
+			
 			break;
 
 		}
@@ -621,6 +641,15 @@ public class MainActivity extends Activity implements OnClickListener {
 		callReqAcceptor = new CallRequestAcceptor(mHandle);
 		callReqAcceptor.start();
 
+	}
+	
+	public void timerDelayRemoveDialog(long time, final Dialog d){
+	    new Handler().postDelayed(new Runnable() {
+	        public void run() {                
+	            resetState();
+	        	d.dismiss();         
+	        }
+	    }, time); 
 	}
 
 }

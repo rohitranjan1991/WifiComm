@@ -6,8 +6,11 @@ import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import com.example.constants.Constants;
+
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 public class CallReplyAcceptor extends Thread{
 
@@ -50,10 +53,10 @@ public class CallReplyAcceptor extends Thread{
 
 	private void waitForReply() {
 		Socket client = null;
-		String res = null;
+		String res=null;
 		try {
 			serverSocket = new ServerSocket(7690);
-			serverSocket.setSoTimeout(10000);
+			serverSocket.setSoTimeout(Constants.callTimeoutTime);
 
 			
 
@@ -85,12 +88,11 @@ public class CallReplyAcceptor extends Thread{
 				serverSocket.close();
 				client.close();
 			} catch (IOException e) {
-					e.printStackTrace();
+				Log.e("Error from CallReplyAcceptor : ", e.getLocalizedMessage());
 			}
-			
-			e1.printStackTrace();
+			Log.e("Error from CallReplyAcceptor : ", e1.getLocalizedMessage());
 		}
-		//return false;
+		MainHandler.sendMessage(MainHandler.obtainMessage(3, 4, 0, false));
 		
 		
 	}
