@@ -1,4 +1,4 @@
-package com.example.wificomm;
+package com.wificomm.deviceScan;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

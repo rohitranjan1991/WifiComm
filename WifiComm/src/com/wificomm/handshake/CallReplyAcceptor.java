@@ -1,4 +1,4 @@
-package com.example.wificomm;
+package com.wificomm.handshake;
 
 import java.io.BufferedReader;
 import java.io.IOException;

@@ -1,12 +1,11 @@
 package com.wificomm.duringCall;
 
-import com.example.wificomm.R;
-import com.example.wificomm.R.layout;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
+
+import com.wificomm.R;
 
 public class OnCallActivity extends Activity{
 

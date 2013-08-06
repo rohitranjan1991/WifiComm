@@ -1,4 +1,4 @@
-package com.example.wificomm;
+package com.wificomm.voiceSendReceive;
 
 import java.io.IOException;
 import java.io.PrintWriter;

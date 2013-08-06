@@ -4,13 +4,12 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-
 import android.view.Window;
 import android.view.WindowManager;
 
-import com.example.wificomm.MainActivity;
-import com.example.wificomm.R;
+import com.wificomm.R;
 import com.wificomm.constants.Constants;
+import com.wificomm.deviceScanView.MainActivity;
 
 public class SplashScreen extends Activity {
 

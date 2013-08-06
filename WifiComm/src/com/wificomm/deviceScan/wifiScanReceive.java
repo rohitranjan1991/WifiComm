@@ -1,4 +1,4 @@
-package com.example.wificomm;
+package com.wificomm.deviceScan;
 
 
 
@@ -20,6 +20,7 @@ package com.example.wificomm;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.BindException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -72,7 +73,6 @@ public class wifiScanReceive extends Thread {
 		String res = null;
 		InputStreamReader istr;
 		BufferedReader br;
-		
 		while (true) {
 			
 
@@ -106,15 +106,10 @@ public class wifiScanReceive extends Thread {
 								
 			} catch (Exception e) {
 				Log.e("Error from wifiScanReceive : ", e.getLocalizedMessage());
-				try {
-					serverSocket.close();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-				serverSocket=null;
-
-		
+				Message msg = mainHandler.obtainMessage(5, "Bing Exception");
+				mainHandler.sendMessage(msg);
+				break;
+						
 			} finally {
 				if (serverSocket != null) {
 					if (!serverSocket.isClosed()) {

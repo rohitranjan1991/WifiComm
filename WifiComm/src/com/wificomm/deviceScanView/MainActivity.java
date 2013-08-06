@@ -1,5 +1,6 @@
-package com.example.wificomm;
+package com.wificomm.deviceScanView;
 
+import java.net.BindException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,8 +37,17 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.wificomm.CallDisconnect;
+import com.wificomm.R;
 import com.wificomm.constants.Constants;
+import com.wificomm.deviceScan.wifiScanReceive;
+import com.wificomm.deviceScan.wifiScanSend;
 import com.wificomm.duringCall.OnCallActivity;
+import com.wificomm.handshake.CallReplyAcceptor;
+import com.wificomm.handshake.CallRequestAcceptor;
+import com.wificomm.storeClasses.DeviceList;
+import com.wificomm.voiceSendReceive.DataSend;
+import com.wificomm.voiceSendReceive.receiveVoice;
 
 public class MainActivity extends Activity implements OnClickListener {
 
@@ -318,6 +328,12 @@ public class MainActivity extends Activity implements OnClickListener {
 					break;
 				}
 				break;
+			case 5:
+				//for wifi scan receive in case of bind Exception
+				
+				Toast.makeText(MainActivity.this,"Bind Exception from wifiScanReceive . Closing the app!!!",Toast.LENGTH_LONG).show();
+				MainActivity.this.finish();
+				break;
 			}
 
 		}
@@ -337,14 +353,17 @@ public class MainActivity extends Activity implements OnClickListener {
 	}
 
 	private void initialize() {
-
+		
 		bScan = (Button) findViewById(R.id.bScan);
 		bIterate = (Button) findViewById(R.id.bIterate);
 
 		bIterate.setOnClickListener(this);
 		bScan.setOnClickListener(this);
-
+		
+		
 		new wifiScanReceive(mHandle).start();
+		
+	
 		// ///////////////////////////////////list
 		adapter = new MyListAdapter();
 		list = (ListView) findViewById(R.id.listView1);
