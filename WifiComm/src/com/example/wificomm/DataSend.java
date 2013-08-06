@@ -276,10 +276,10 @@ public class DataSend extends Thread {
 		recorder.startRecording();
 		isRecording = true;
 		dsocket.setSoTimeout(2000);
-		
+		try {
 			while (isRecording) {
 				recorder.read(sData, 0, bufferSize);
-				try {
+				
 					// // writes the data to file from buffer
 					// // stores the voice buffer
 
@@ -293,12 +293,12 @@ public class DataSend extends Thread {
 
 					// os.write(bData, 0, BufferElements2Rec *
 					// BytesPerElement);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+				
 
 			}
-		
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 			recorder.release();
 			recorder=null;
 		// out.println("Finally !!!");

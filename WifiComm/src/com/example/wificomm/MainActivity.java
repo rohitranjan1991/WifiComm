@@ -145,11 +145,12 @@ public class MainActivity extends Activity implements OnClickListener {
 										public void onClick(
 												DialogInterface dialog, int id) {
 											View v = findRow(ipCaller);
-
+											
 											if (v != null) {
-
-												View v1 = v
+												LinearLayout v1=null;
+												 v1 = (LinearLayout)v
 														.findViewById(R.id.buttons);
+												 if(v1!=null){
 												Button call = (Button) v1
 														.findViewById(R.id.bCall);
 												Button Dissconect = (Button) v1
@@ -157,13 +158,15 @@ public class MainActivity extends Activity implements OnClickListener {
 												call.setEnabled(false);
 												Dissconect.setEnabled(true);
 												connectionrow = v1;
+												 }
 
 											} else {
+												View v1=null;
 												myDevices.add(new DeviceList(
 														"Unknown", ipCaller));
 												adapter.notifyDataSetChanged();
 												View v0 = findRow(ipCaller);
-												View v1 = v0
+												 v1 = v0
 														.findViewById(R.id.buttons);
 												Button call = (Button) v1
 														.findViewById(R.id.bCall);
@@ -173,6 +176,7 @@ public class MainActivity extends Activity implements OnClickListener {
 												Dissconect.setEnabled(true);
 												connectionrow = v1;
 											}
+									//		adapter.notifyDataSetChanged();
 											send = new DataSend(mHandle,
 													ipCaller, "Reply True");
 											send.start();
@@ -264,7 +268,7 @@ public class MainActivity extends Activity implements OnClickListener {
 				// when call on progress
 				switch (msg.arg1) {
 				case 0:
-					Boolean disconnect = (Boolean) msg.obj;
+					/*Boolean disconnect = (Boolean) msg.obj;
 					// String ret=msg.obj.toString();
 					if (disconnect) {
 						sendHandler.sendMessage(sendHandler.obtainMessage(0,
@@ -275,12 +279,18 @@ public class MainActivity extends Activity implements OnClickListener {
 						connectionrow.findViewById(R.id.bDisconnect)
 								.setEnabled(false);
 						resetState();
-					}
+					}*/
 
 					break;
 				case 1:
-				//	sendHandler.sendMessage(sendHandler.obtainMessage(0,	"Stop"));
-				//	receiveVoice.sendMessage(receiveVoice.obtainMessage(0,"Stop"));
+					try{
+					sendHandler.sendMessage(sendHandler.obtainMessage(0,	"Stop"));
+					}
+					catch(Exception e)
+					{
+						
+					}
+					//	receiveVoice.sendMessage(receiveVoice.obtainMessage(0,"Stop"));
 					connectionrow.findViewById(R.id.bCall).setEnabled(true);
 					connectionrow.findViewById(R.id.bDisconnect)
 							.setEnabled(false);
@@ -443,12 +453,11 @@ public class MainActivity extends Activity implements OnClickListener {
 				break;
 			case R.id.bDisconnect:
 //				disCallHandler.sendMessage(disCallHandler.obtainMessage(0,"Stop"));
-				sendHandler.sendMessage(sendHandler.obtainMessage(0, "Stop"));
+				//sendHandler.sendMessage(sendHandler.obtainMessage(0, "Stop"));
 				receiveVoice.sendMessage(receiveVoice.obtainMessage(0, "Stop"));
 		//		new DataSend(mHandle, ipAddr, "Disconnect Call");
 				connectionrow.findViewById(R.id.bCall).setEnabled(true);
 				connectionrow.findViewById(R.id.bDisconnect).setEnabled(false);
-				resetState();
 				break;
 			}
 
@@ -477,7 +486,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// find row
-	public View findRow(String ip) {
+	public View findRow(String str) {
 		if (list.getCount() != 0) {
 			int i = 0;
 			for (i = 0; i < list.getCount(); i++) {
@@ -487,7 +496,9 @@ public class MainActivity extends Activity implements OnClickListener {
 						(ViewGroup) findViewById(R.id.listView1));
 				TextView v2 = (TextView) v1.findViewById(R.id.text)
 						.findViewById(R.id.IPAddress);
-				if (v2.getText().toString().contentEquals(ip))
+				
+				Toast.makeText(this, "IP Address of the "+i+" row = "+v2.getText(), Toast.LENGTH_SHORT).show();
+				if (v2.getText().toString().contentEquals(str))
 					return v1;
 
 			}
@@ -509,7 +520,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		int ip = wifiInfo.getIpAddress();
 		String ipAddress = Formatter.formatIpAddress(ip);
 		for (int i = 0; i < 256; i++) {
-			String currIp = "10.0.2." + i;
+			String currIp = "192.168.2." + i;
 
 			if (!currIp.contentEquals(ipAddress)) {
 				new wifiScanSend(mHandle, "DeviceInfo request", currIp,

@@ -26,11 +26,13 @@ import java.net.Socket;
 
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 public class wifiScanReceive extends Thread {
 
 	private static Handler mainHandler;
 	String temp = "";
+	ServerSocket serverSocket = null;
 
 	// HandlerThread handle = new HandlerThread("My Thread");
 
@@ -72,7 +74,7 @@ public class wifiScanReceive extends Thread {
 		BufferedReader br;
 		
 		while (true) {
-			ServerSocket serverSocket = null;
+			
 
 			try {
 				Thread.sleep(200);
@@ -93,19 +95,26 @@ public class wifiScanReceive extends Thread {
 					
 				}
 				else if (res.contains("DeviceName : "))
-				{
-					
-					
+				{									
 					Message msg = mainHandler.obtainMessage(2, res.trim());
 					mainHandler.sendMessage(msg);
 				}
+				
 				//if end
 				}// while end
 				
-				
+								
 			} catch (Exception e) {
-				
-				e.printStackTrace();
+				Log.e("Error from wifiScanReceive : ", e.getLocalizedMessage());
+				try {
+					serverSocket.close();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				serverSocket=null;
+
+		
 			} finally {
 				if (serverSocket != null) {
 					if (!serverSocket.isClosed()) {
