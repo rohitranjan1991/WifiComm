@@ -37,7 +37,7 @@ public class OnCallActivity extends Activity implements OnClickListener {
 	Button bDisconnect;
 	private Handler sendHandler;
 	private String callIp,callName;
-	private String purpose;
+	private int purpose;
 	private String extraText;
 	private DataSend send;
 	private Boolean reply;
@@ -51,7 +51,7 @@ public class OnCallActivity extends Activity implements OnClickListener {
 	public OnCallActivity() {
 		callIp=null;
 		callName=null;
-		purpose=null;
+		purpose=0;
 		extraText=null;
 		send=null;
 				
@@ -123,12 +123,13 @@ public class OnCallActivity extends Activity implements OnClickListener {
 						// callDis.start();
 					} else {// if call rejected
 
-						resetState();
+						resetState(Constants.CALL_REJECT_RECEIVER);
 					}
 
 					break;
 				case 3:
 					// from caller
+					//if the reply from receiver is true
 
 					reply = (Boolean) msg.obj;
 
@@ -143,9 +144,9 @@ public class OnCallActivity extends Activity implements OnClickListener {
 						
 
 					} else {
-						// if call rejected
+						
 						//to be defined for sending result back to activity
-						resetState();
+						resetState(Constants.CALL_REJECT_RESPONSE_CALLER);
 					}
 
 					break;
@@ -156,7 +157,7 @@ public class OnCallActivity extends Activity implements OnClickListener {
 
 					if (!reply) {
 						
-						resetState();
+						resetState(Constants.CALL_REPLY_TIMEOUT);
 					}
 
 					break;
@@ -180,7 +181,7 @@ public class OnCallActivity extends Activity implements OnClickListener {
 					/*myDevices.get(currentCallerPos).setOnCallState(false);
 					// receiveVoice.sendMessage(receiveVoice.obtainMessage(0,"Stop"));
 					adapter.notifyDataSetChanged();*/
-					resetState();
+					resetState(Constants.CALL_DISCONNECTED);
 					break;
 				}
 				break;
@@ -218,8 +219,8 @@ public class OnCallActivity extends Activity implements OnClickListener {
 		Intent intent = getIntent();
 		callIp=intent.getStringExtra("ip");
 		callName=intent.getStringExtra("name");
-		purpose=intent.getStringExtra("purpose");
-		if(purpose.contentEquals("receiving"))
+		purpose=intent.getIntExtra("purpose", 0);
+		if(purpose==Constants.PURPOSE_RECEIVING)
 		{
 			extraText=intent.getStringExtra("extraText");
 		}
@@ -233,13 +234,13 @@ public class OnCallActivity extends Activity implements OnClickListener {
 
 
 	private void initiateCall() {
-		if(purpose.contentEquals("calling"))
+		if(purpose==Constants.PURPOSE_CALLING)
 		{
 			send = new DataSend(mHandle, callIp, "Initiate Call !!");
 			send.start();
 		}
 		else
-		if(purpose.contentEquals("receiving"))
+		if(purpose==Constants.PURPOSE_RECEIVING)
 		{
 			send = new DataSend(mHandle,
 					callIp, extraText);
@@ -263,8 +264,14 @@ public class OnCallActivity extends Activity implements OnClickListener {
 		}
 	}
 	
-	private void resetState() {
+	private void resetState(int reason) {
 		//reset view also of mainactivity
+		
+		 Intent returnIntent = new Intent();
+		 returnIntent.putExtra("purpose",purpose);
+		 returnIntent.putExtra("result",reason);
+		 setResult(RESULT_OK,returnIntent);     
+		 finish();
 		
 	}
 

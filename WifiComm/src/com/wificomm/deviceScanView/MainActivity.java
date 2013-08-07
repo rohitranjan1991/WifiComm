@@ -213,7 +213,7 @@ public class MainActivity extends Activity implements OnClickListener {
 													findViewById(R.layout.row_layout),
 													(ViewGroup) findViewById(R.id.listView1)).findViewById(R.id.topText)
 													.findViewById(R.id.text).findViewById(R.id.nameView).findViewById(R.id.Name);
-											startMainCall(ipCaller, callerName.getText().toString(), "receiving", "ReplyTrue", 2);
+											startMainCall(ipCaller, callerName.getText().toString(), Constants.PURPOSE_RECEIVING, "ReplyTrue", 2);
 											/*send = new DataSend(mHandle,
 													ipCaller, "Reply True");
 											send.start();*/
@@ -516,9 +516,11 @@ public class MainActivity extends Activity implements OnClickListener {
 				currentCallerPos = findRow(ipToCall);
 				myDevices.get(currentCallerPos).setOnCallState(true);
 				adapter.notifyDataSetChanged();
+				
 				callRequestHandler.sendMessage(callRequestHandler
 						.obtainMessage(0, "Stop"));
-				startMainCall(ipToCall, name.getText().toString(), "calling", null, 1);
+				callRequestHandler=null;
+				startMainCall(ipToCall, name.getText().toString(), Constants.PURPOSE_CALLING, null, 1);
 				/*
 				 * call = new DataSend(mHandle, ipAddr, "Initiate Call !!");
 				 * call.start();
@@ -751,7 +753,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	}
 	
-	public void startMainCall(String callerIp,String name,String purpose,String extraText,int requestcode)
+	public void startMainCall(String callerIp,String name,int purpose,String extraText,int requestcode)
 	{
 		Intent intent = new Intent(MainActivity.this,
 				OnCallActivity.class);
