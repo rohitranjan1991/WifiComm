@@ -8,6 +8,7 @@ import java.net.Socket;
 
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 public class CallRequestAcceptor extends Thread{
 
@@ -89,7 +90,9 @@ public class CallRequestAcceptor extends Thread{
 			}
 		} catch (Exception e1) {
 			
-			e1.printStackTrace();
+			Log.e("Erroe From CallrequestAcceptor ",e1.getLocalizedMessage());
+			Message msg = MainHandler.obtainMessage(5, "Bing Exception");
+			MainHandler.sendMessage(msg);
 		}
 		if(serverSocket!=null)
 			try {

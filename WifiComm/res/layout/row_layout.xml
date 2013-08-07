@@ -7,64 +7,91 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_margin="5dp"
         android:orientation="vertical" >
 
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_margin="5dp"
             android:src="@drawable/img1" />
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/topText"
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical" >
+        android:orientation="horizontal"
+        android:weightSum="100" >
 
         <LinearLayout
             android:id="@+id/text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="50dp"
-            android:orientation="horizontal" >
+            
+            android:layout_weight="50"
+            android:orientation="vertical"
+             >
 
-            <TextView
-                android:id="@+id/Name"
+            <LinearLayout
+                android:id="@+id/nameView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TextView" />
+                android:layout_margin="5dp"
+                android:orientation="horizontal" >
 
-            <TextView
-                android:id="@+id/IPAddress"
+                <TextView
+                  
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Name : " />
+                <TextView
+                    android:id="@+id/Name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="TextView" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/IpView"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="50dp"
-                android:text="TextView" />
+                android:layout_height="wrap_content" 
+                android:layout_margin="5dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ip Address : " />
+                <TextView
+                    android:id="@+id/IPAddress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="TextView" />
+            </LinearLayout>
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/buttons"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:weightSum="100" >
+            android:layout_height="fill_parent"
+           android:layout_weight="50"
+            android:orientation="horizontal" >
 
-            <Button
+            <ImageButton
                 android:id="@+id/bCall"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="50dp"
-                android:layout_weight="50"
-                android:background="@drawable/callbutton" />
+                android:layout_height="fill_parent"
+                android:background="@null"
+                android:src="@drawable/call" />
 
-            <Button
+            <ImageButton
                 android:id="@+id/bDisconnect"
-                android:layout_width="fill_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="50dp"
-                android:layout_weight="50"
-                android:background="@drawable/callend"
-                android:enabled="false" />
+                android:background="@null"
+                android:src="@drawable/callend"
+                android:visibility="gone" />
         </LinearLayout>
     </LinearLayout>
 

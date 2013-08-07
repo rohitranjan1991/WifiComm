@@ -1,22 +1,5 @@
 package com.wificomm.deviceScan;
 
-
-
-
-
-
-
-
-/*
- * First task is to find our own ip address   
- * 
- * */
-
-
-
-
-
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -32,8 +15,9 @@ import android.util.Log;
 public class wifiScanReceive extends Thread {
 
 	private static Handler mainHandler;
-	String temp = "";
-	ServerSocket serverSocket = null;
+	private String temp = "";
+	private ServerSocket serverSocket = null;
+	private static Boolean scanReceive=true;
 
 	// HandlerThread handle = new HandlerThread("My Thread");
 
@@ -45,16 +29,21 @@ public class wifiScanReceive extends Thread {
 		@Override
 		public void handleMessage(Message msg) {
 			if (msg.obj.toString().contentEquals("DeviceInfo Not Sent")) {
-				Message msgToSend = mainHandler.obtainMessage(0, msg.obj.toString());
+				Message msgToSend = mainHandler.obtainMessage(0,
+						msg.obj.toString());
 				mainHandler.sendMessage(msgToSend);
-			}
-			else if (msg.obj.toString().contentEquals("DeviceInfo Sent")) {
-					Message msgToSend = mainHandler.obtainMessage(0, msg.obj.toString());
-					mainHandler.sendMessage(msgToSend);
-				}
-			else if (msg.obj.toString().contains("DeviceName")) {
-				Message msgToSend = mainHandler.obtainMessage(0, msg.obj.toString());
+			} else if (msg.obj.toString().contentEquals("DeviceInfo Sent")) {
+				Message msgToSend = mainHandler.obtainMessage(0,
+						msg.obj.toString());
 				mainHandler.sendMessage(msgToSend);
+			} else if (msg.obj.toString().contains("DeviceName")) {
+				Message msgToSend = mainHandler.obtainMessage(0,
+						msg.obj.toString());
+				mainHandler.sendMessage(msgToSend);
+			}else if (msg.obj.toString().contains("stopService"))
+			{
+				scanReceive=false;
+				
 			}
 
 		}
@@ -62,6 +51,7 @@ public class wifiScanReceive extends Thread {
 
 	public wifiScanReceive(Handler handle) {
 		this.mainHandler = handle;
+		mainHandler.sendMessage(mainHandler.obtainMessage(0, 7, 0, rHandle));
 
 	}
 
@@ -69,47 +59,45 @@ public class wifiScanReceive extends Thread {
 	public void run() {
 
 		super.run();
-
+		
 		String res = null;
 		InputStreamReader istr;
 		BufferedReader br;
-		while (true) {
-			
+		while (scanReceive) {
 
 			try {
 				Thread.sleep(200);
 				serverSocket = new ServerSocket(9071);
-				while(true){
-					
-				Socket client = serverSocket.accept();
+//				serverSocket.setReuseAddress(true);
+				while (true) {
 
-				istr = new InputStreamReader(client.getInputStream());
+					Socket client = serverSocket.accept();
+					
+					istr = new InputStreamReader(client.getInputStream());
 
-				br = new BufferedReader(istr);
-				res = br.readLine();
-				if (res.contentEquals("DeviceInfo request")) {
-					InetAddress addr = client.getInetAddress();
-					
-					Message msg = mainHandler.obtainMessage(1, addr.getHostAddress());
-					mainHandler.sendMessage(msg);
-					
-				}
-				else if (res.contains("DeviceName : "))
-				{									
-					Message msg = mainHandler.obtainMessage(2, res.trim());
-					mainHandler.sendMessage(msg);
-				}
-				
-				//if end
+					br = new BufferedReader(istr);
+					res = br.readLine();
+					if (res.contentEquals("DeviceInfo request")) {
+						InetAddress addr = client.getInetAddress();
+
+						Message msg = mainHandler.obtainMessage(1,
+								addr.getHostAddress());
+						mainHandler.sendMessage(msg);
+
+					} else if (res.contains("DeviceName : ")) {
+						Message msg = mainHandler.obtainMessage(2, res.trim());
+						mainHandler.sendMessage(msg);
+					}
+
+					// if end
 				}// while end
-				
-								
+
 			} catch (Exception e) {
 				Log.e("Error from wifiScanReceive : ", e.getLocalizedMessage());
 				Message msg = mainHandler.obtainMessage(5, "Bing Exception");
 				mainHandler.sendMessage(msg);
-				break;
-						
+				scanReceive=false;
+
 			} finally {
 				if (serverSocket != null) {
 					if (!serverSocket.isClosed()) {
@@ -121,7 +109,7 @@ public class wifiScanReceive extends Thread {
 					}
 				}
 			}
-			
+
 			// mHandler.obtainMessage(0,res).sendToTarget();
 			// publishProgress(values)
 		}

@@ -38,7 +38,7 @@ public class CallReplyAcceptor extends Thread{
 	
 	public CallReplyAcceptor(Handler MainHandler) {
 		this.MainHandler=MainHandler;
-		MainHandler.sendMessage(MainHandler.obtainMessage(0, 1, 0, mHandle));
+		MainHandler.sendMessage(MainHandler.obtainMessage(0, 4, 0, mHandle));
 		waitForReply=true;
 		MainInterupt=false;
 	}
@@ -51,7 +51,7 @@ public class CallReplyAcceptor extends Thread{
 	}
 
 
-	private void waitForReply() {
+	private Boolean waitForReply() {
 		Socket client = null;
 		String res=null;
 		try {
@@ -75,7 +75,7 @@ public class CallReplyAcceptor extends Thread{
 					
 					MainHandler.sendMessage(MainHandler.obtainMessage(3, 3, 0, true));
 
-					//return true;
+					return true;
 
 				} catch (Exception e) {
 					waitForReply=false;
@@ -93,7 +93,7 @@ public class CallReplyAcceptor extends Thread{
 			Log.e("Error from CallReplyAcceptor : ", e1.getLocalizedMessage());
 		}
 		MainHandler.sendMessage(MainHandler.obtainMessage(3, 4, 0, false));
-		
+		return false;
 		
 	}
 
