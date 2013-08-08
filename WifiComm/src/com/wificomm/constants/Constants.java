@@ -3,7 +3,7 @@ package com.wificomm.constants;
 public class Constants {
 
 	public static int callTimeoutTime=10000;
-	public static final int SPLASH_DISPLAY_LENGHT = 5000;
+	public static final int SPLASH_DISPLAY_LENGHT = 1000;
 	public static final int CALL_REJECT_RECEIVER = 0;
 	public static final int CALL_RESPONSE_REJECT_CALLER = 1;
 	public static final int CALL_REPLY_TIMEOUT = 2;

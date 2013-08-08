@@ -2,14 +2,17 @@ package com.wificomm.deviceScanView;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.wificomm.services.wificommService;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.hardware.Sensor;
@@ -33,7 +36,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -42,8 +44,8 @@ import android.widget.Toast;
 
 import com.example.wificomm.CallDisconnect;
 import com.wificomm.R;
-import com.wificomm.PrefManager.Prefs;
 import com.wificomm.PrefManager.MenuPreference;
+import com.wificomm.PrefManager.Prefs;
 import com.wificomm.common.DeviceList;
 import com.wificomm.constants.Constants;
 import com.wificomm.deviceScan.wifiScanReceive;
@@ -78,7 +80,8 @@ public class MainActivity extends Activity implements OnClickListener {
 	CallDisconnect callDis;
 	int currentCallerPos = -1;
 	private AudioManager am;
-	
+	private static final String ACTION_STRING_SERVICE = "ToService";
+    private static final String ACTION_STRING_ACTIVITY = "ToActivity";
 
 	private SensorManager mSensorManager;
 	private Boolean CallRequestSent = false;
@@ -90,6 +93,16 @@ public class MainActivity extends Activity implements OnClickListener {
 	List<DeviceList> myDevices = new ArrayList<DeviceList>();
 	private AudioManager audioManager;
 	// //////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	 private BroadcastReceiver activityReceiver = new BroadcastReceiver() {
+
+	        @Override
+	        public void onReceive(Context context, Intent intent) {
+	            Toast.makeText(getApplicationContext(), "received message in activity..!", Toast.LENGTH_SHORT).show();
+	        }
+	    };
+	
+	
 	final Handler mHandle = new Handler() {
 
 		@Override
@@ -285,14 +298,24 @@ public class MainActivity extends Activity implements OnClickListener {
 			new wifiScanReceive(mHandle).start();
 		}
 		if (callRequestHandler == null) {
-			callReqAcceptor = new CallRequestAcceptor(mHandle);
-			callReqAcceptor.start();
+			/*callReqAcceptor = new CallRequestAcceptor(mHandle);
+			callReqAcceptor.start();*/
 		}
 		
 		if(Prefs.getInstance(settings).contains("username"))
 		{
 			displayName.setText(Prefs.getInstance(settings).fetch("username"));
 		}
+		
+		 if (activityReceiver != null) {
+	        	//Create an intent filter to listen to the broadcast sent with the action "ACTION_STRING_ACTIVITY"
+	            IntentFilter intentFilter = new IntentFilter(ACTION_STRING_ACTIVITY);
+	            //Map the intent filter to the receiver
+	            registerReceiver(activityReceiver, intentFilter);
+			
+	        }
+		 startService(new Intent(this,wificommService.class));
+		
 		try {
 			Thread.sleep(500);
 		} catch (InterruptedException e) {
@@ -311,9 +334,9 @@ public class MainActivity extends Activity implements OnClickListener {
 			scanReceiveHandler = null;
 		}
 		if (callRequestHandler != null) {
-			callRequestHandler.sendMessage(callRequestHandler.obtainMessage(0,
+			/*callRequestHandler.sendMessage(callRequestHandler.obtainMessage(0,
 					"Stop"));
-			callRequestHandler = null;
+			callRequestHandler = null;*/
 		}
 
 		try {
@@ -463,6 +486,7 @@ public class MainActivity extends Activity implements OnClickListener {
 				 * callRequestHandler.sendMessage(callRequestHandler
 				 * .obtainMessage(0, "Stop")); callRequestHandler=null;
 				 */
+				
 				startMainCall(ipToCall, name.getText().toString(),
 						Constants.PURPOSE_CALLING, null, 1);
 				/*
@@ -476,6 +500,13 @@ public class MainActivity extends Activity implements OnClickListener {
 		}
 
 	}
+	
+	
+	 private void sendBroadcast() {
+	        Intent new_intent = new Intent();
+	        new_intent.setAction(ACTION_STRING_SERVICE);
+	        sendBroadcast(new_intent);
+	    }
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -534,7 +565,7 @@ public class MainActivity extends Activity implements OnClickListener {
 			break;
 		case R.id.bIterate:
 
-			finish();
+			sendBroadcast();
 
 			break;
 
