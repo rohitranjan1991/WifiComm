@@ -39,7 +39,8 @@ public class OnCallActivity extends Activity implements OnClickListener {
 	private Handler callReplyHandler;
 	private Handler receiveVoiceHandler;
 	private Handler callManageHandler;
-	
+	private static final String ACTION_STRING_SERVICE = "ToService";
+    private static final String ACTION_STRING_ACTIVITY = "ToActivity";
 	
 	public OnCallActivity() {
 		am=null;
@@ -297,13 +298,18 @@ public class OnCallActivity extends Activity implements OnClickListener {
 		//reset view also of mainactivity
 		
 		 Intent returnIntent = new Intent();
+		 returnIntent.setAction(ACTION_STRING_SERVICE);
+		 returnIntent.putExtra("activity","OnCallActivity");
 		 returnIntent.putExtra("purpose",purpose);
 		 returnIntent.putExtra("result",reason);
-		 setResult(RESULT_OK,returnIntent);     
-		 finish();
+		// setResult(RESULT_OK,returnIntent);     
+		// finish();
+		 sendBroadcast(returnIntent);
+	        
+	        
 		
 	}
-
+	
 	
 
 }

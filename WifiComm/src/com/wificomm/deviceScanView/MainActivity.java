@@ -6,6 +6,7 @@ import com.wificomm.services.wificommService;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Application;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
@@ -55,6 +56,7 @@ import com.wificomm.handshake.CallReplyAcceptor;
 import com.wificomm.handshake.CallRequestAcceptor;
 import com.wificomm.voiceSendReceive.DataSend;
 import com.wificomm.voiceSendReceive.receiveVoice;
+import com.wificomm.common.wificommApplication;
 
 public class MainActivity extends Activity implements OnClickListener {
 
@@ -92,6 +94,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	List<DeviceList> myDevices = new ArrayList<DeviceList>();
 	private AudioManager audioManager;
+	static boolean active = false;
 	// //////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	 private BroadcastReceiver activityReceiver = new BroadcastReceiver() {
@@ -102,7 +105,25 @@ public class MainActivity extends Activity implements OnClickListener {
 	        }
 	    };
 	
+	    public static boolean isActive()
+	    {return active;
+	    }
+	    
+
+	      
 	
+	@Override
+		protected void onStart() {
+			active=true;
+			super.onStart();
+		}
+
+		@Override
+		protected void onStop() {
+			active=false;
+			super.onStop();
+		}
+
 	final Handler mHandle = new Handler() {
 
 		@Override
@@ -147,6 +168,7 @@ public class MainActivity extends Activity implements OnClickListener {
 						separated[1].length()).trim();
 				myDevices.add(new DeviceList(name, ipAddr1));
 				adapter.notifyDataSetChanged();
+				wificommApplication.getInstance().setMyDevices(myDevices);
 				break;
 
 			case 3:
@@ -306,7 +328,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		{
 			displayName.setText(Prefs.getInstance(settings).fetch("username"));
 		}
-		
+		active=true;
 		 if (activityReceiver != null) {
 	        	//Create an intent filter to listen to the broadcast sent with the action "ACTION_STRING_ACTIVITY"
 	            IntentFilter intentFilter = new IntentFilter(ACTION_STRING_ACTIVITY);
@@ -338,7 +360,7 @@ public class MainActivity extends Activity implements OnClickListener {
 					"Stop"));
 			callRequestHandler = null;*/
 		}
-
+		active=false;
 		try {
 			Thread.sleep(500);
 		} catch (InterruptedException e) {
