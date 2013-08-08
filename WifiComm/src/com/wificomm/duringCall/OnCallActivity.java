@@ -1,31 +1,23 @@
 package com.wificomm.duringCall;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.AudioManager;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.text.format.Formatter;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.wificomm.R;
 import com.wificomm.constants.Constants;
-import com.wificomm.deviceScan.wifiScanSend;
 import com.wificomm.deviceScanView.MainActivity;
 import com.wificomm.handshake.CallReplyAcceptor;
-import com.wificomm.storeClasses.DeviceList;
 import com.wificomm.voiceSendReceive.DataSend;
 import com.wificomm.voiceSendReceive.receiveVoice;
 
@@ -40,27 +32,36 @@ public class OnCallActivity extends Activity implements OnClickListener {
 	private int purpose;
 	private String extraText;
 	private DataSend send;
-	private Boolean reply;
+	private boolean reply;
 	private receiveVoice rVoice;
 	private boolean CallRequestSent;
 	private CallReplyAcceptor callReplyObject;
-	private Handler callReply;
-	private Handler receiveVoice;
-	private Handler callManage;
+	private Handler callReplyHandler;
+	private Handler receiveVoiceHandler;
+	private Handler callManageHandler;
+	
 	
 	public OnCallActivity() {
+		am=null;
+		tCallerName=null;
+		tCallerIp=null;
+		bDisconnect=null;
+		sendHandler=null;
 		callIp=null;
 		callName=null;
 		purpose=0;
 		extraText=null;
 		send=null;
-				
+		reply=false;
+		rVoice=null;
+		CallRequestSent=false;
+		callReplyObject=null;
+		callReplyHandler=null;
+		receiveVoiceHandler=null;
+		callManageHandler=null;
 	}
 
-	final Handler mHandle = new Handler() {
-
-		
-		
+	final Handler onCallHandler = new Handler() {
 
 		@Override
 		public void handleMessage(Message msg) {
@@ -74,14 +75,14 @@ public class OnCallActivity extends Activity implements OnClickListener {
 					sendHandler = (Handler) msg.obj;
 					break;
 				case 3:
-					callManage = (Handler) msg.obj;
+					callManageHandler = (Handler) msg.obj;
 					break;
 
 				case 4:
-					callReply = (Handler) msg.obj;
+					callReplyHandler = (Handler) msg.obj;
 					break;
 				case 5:
-					receiveVoice = (Handler) msg.obj;
+					receiveVoiceHandler = (Handler) msg.obj;
 					break;
 				
 				
@@ -100,7 +101,7 @@ public class OnCallActivity extends Activity implements OnClickListener {
 							"Call Request Sent");
 					if (CallRequestSent) {
 						
-						callReplyObject = new CallReplyAcceptor(mHandle);
+						callReplyObject = new CallReplyAcceptor(onCallHandler);
 						callReplyObject.start();
 					}
 
@@ -108,19 +109,18 @@ public class OnCallActivity extends Activity implements OnClickListener {
 				case 2:
 
 					// from receiver
+					//3,2,0
 					reply = (Boolean) msg.obj;
 
 					if (reply) {
 						// start receiving main call
-						rVoice = new receiveVoice(mHandle, am);
+						rVoice = new receiveVoice(onCallHandler, am);
 						rVoice.start();
 						// if call accepted
 						// start sending main call
-						send = new DataSend(mHandle, callIp, "Main Call");
+						send = new DataSend(onCallHandler, callIp, "Main Call");
 						send.start();
-						// starting CallDisconnector Thread
-						// callDis = new CallDisconnect(mHandle);
-						// callDis.start();
+						
 					} else {// if call rejected
 
 						resetState(Constants.CALL_REJECT_RECEIVER);
@@ -130,28 +130,29 @@ public class OnCallActivity extends Activity implements OnClickListener {
 				case 3:
 					// from caller
 					//if the reply from receiver is true
+					//3,3,0
 
 					reply = (Boolean) msg.obj;
 
 					if (reply) {
 						// start receiving main call
-						rVoice = new receiveVoice(mHandle, am);
+						rVoice = new receiveVoice(onCallHandler, am);
 						rVoice.start();
 						// if call accepted
 						// start sending main call
-						send = new DataSend(mHandle, callIp, "Main Call");
+						send = new DataSend(onCallHandler, callIp, "Main Call");
 						send.start();
 						
 
 					} else {
 						
 						//to be defined for sending result back to activity
-						resetState(Constants.CALL_REJECT_RESPONSE_CALLER);
+						resetState(Constants.CALL_RESPONSE_REJECT_CALLER);
 					}
 
 					break;
 				case 4:
-					
+					//3,4,0
 					//from call reply acceptor in case of out of time
 					reply = (Boolean) msg.obj;
 
@@ -167,6 +168,7 @@ public class OnCallActivity extends Activity implements OnClickListener {
 				
 			case 4:
 				// when call on progress
+				//4,0,0
 				switch (msg.arg1) {
 				
 				case 1:
@@ -174,13 +176,8 @@ public class OnCallActivity extends Activity implements OnClickListener {
 						sendHandler.sendMessage(sendHandler.obtainMessage(0,
 								"Stop"));
 					} catch (Exception e) {
-
+						Log.e("Error from sendHandler while disconnecting the call : ", e.getLocalizedMessage());
 					}
-					
-					
-					/*myDevices.get(currentCallerPos).setOnCallState(false);
-					// receiveVoice.sendMessage(receiveVoice.obtainMessage(0,"Stop"));
-					adapter.notifyDataSetChanged();*/
 					resetState(Constants.CALL_DISCONNECTED);
 					break;
 				}
@@ -215,6 +212,7 @@ public class OnCallActivity extends Activity implements OnClickListener {
 		tCallerIp = (TextView) findViewById(R.id.tCallerIp);
 		tCallerName = (TextView) findViewById(R.id.tCallerName);
 		am = (AudioManager) getSystemService(MainActivity.AUDIO_SERVICE);
+		
 		//getting the Callers Details
 		Intent intent = getIntent();
 		callIp=intent.getStringExtra("ip");
@@ -233,16 +231,48 @@ public class OnCallActivity extends Activity implements OnClickListener {
 			}
 
 
+	@Override
+	protected void onPause() {
+		if(sendHandler!=null){
+			sendHandler.sendMessage(sendHandler.obtainMessage(0,
+				"Stop"));
+		sendHandler=null;
+		}
+		if(callReplyHandler!=null)
+		{
+			callReplyHandler.sendMessage(callReplyHandler.obtainMessage(0,
+					"Stop"));
+			callReplyHandler=null;
+		}
+		if(receiveVoiceHandler!=null)
+		{
+			receiveVoiceHandler.sendMessage(receiveVoiceHandler.obtainMessage(0, "Stop"));
+		}
+		resetState(Constants.CALL_ACITIVITY_FOCOUS_LOST);
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		super.onPause();
+	}
+
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+	}
+
 	private void initiateCall() {
 		if(purpose==Constants.PURPOSE_CALLING)
 		{
-			send = new DataSend(mHandle, callIp, "Initiate Call !!");
+			send = new DataSend(onCallHandler, callIp, "Initiate Call !!");
 			send.start();
 		}
 		else
 		if(purpose==Constants.PURPOSE_RECEIVING)
 		{
-			send = new DataSend(mHandle,
+			send = new DataSend(onCallHandler,
 					callIp, extraText);
 			send.start();
 			
@@ -254,12 +284,11 @@ public class OnCallActivity extends Activity implements OnClickListener {
 		switch(v.getId())
 		{
 		case R.id.bDisconnectCall:
-			receiveVoice.sendMessage(receiveVoice.obtainMessage(0, "Stop"));
+			if(receiveVoiceHandler!=null)
+				receiveVoiceHandler.sendMessage(receiveVoiceHandler.obtainMessage(0, "Stop"));
+			else
+				resetState(99);
 			
-			/*Intent returnIntent = new Intent();
-			 returnIntent.putExtra("result","Call Ended");
-			 setResult(RESULT_OK,returnIntent);     
-			 finish();*/
 			break;
 		}
 	}

@@ -14,7 +14,7 @@ import android.util.Log;
 
 public class CallReplyAcceptor extends Thread{
 
-	Handler MainHandler;
+	Handler baseHandler;
 
 	final Handler mHandle = new Handler() {
 		@Override
@@ -37,7 +37,7 @@ public class CallReplyAcceptor extends Thread{
 
 	
 	public CallReplyAcceptor(Handler MainHandler) {
-		this.MainHandler=MainHandler;
+		this.baseHandler=MainHandler;
 		MainHandler.sendMessage(MainHandler.obtainMessage(0, 4, 0, mHandle));
 		waitForReply=true;
 		MainInterupt=false;
@@ -56,12 +56,13 @@ public class CallReplyAcceptor extends Thread{
 		String res=null;
 		try {
 			serverSocket = new ServerSocket(7690);
-			serverSocket.setSoTimeout(Constants.callTimeoutTime);
+			serverSocket.setSoTimeout(Constants.callTimeoutTime/100);
 
 			
-
+			int count=1;
 			while (waitForReply && !MainInterupt) {
 				try {
+					count++;
 					client = serverSocket.accept();
 					InputStreamReader istr = new InputStreamReader(
 							client.getInputStream());
@@ -73,26 +74,27 @@ public class CallReplyAcceptor extends Thread{
 					serverSocket.close();
 					client.close();
 					
-					MainHandler.sendMessage(MainHandler.obtainMessage(3, 3, 0, true));
+					baseHandler.sendMessage(baseHandler.obtainMessage(3, 3, 0, true));
 
 					return true;
 
 				} catch (Exception e) {
+					if(count>100){
 					waitForReply=false;
 					serverSocket.close();
-					client.close();
+					client.close();}
+					
 				}
 			}
 		} catch (Exception e1) {
 			try {
 				serverSocket.close();
-				client.close();
 			} catch (IOException e) {
 				Log.e("Error from CallReplyAcceptor : ", e.getLocalizedMessage());
 			}
-			Log.e("Error from CallReplyAcceptor : ", e1.getLocalizedMessage());
+			//Log.e("Error from CallReplyAcceptor : ", e1.getLocalizedMessage());
 		}
-		MainHandler.sendMessage(MainHandler.obtainMessage(3, 4, 0, false));
+		baseHandler.sendMessage(baseHandler.obtainMessage(3, 4, 0, false));
 		return false;
 		
 	}

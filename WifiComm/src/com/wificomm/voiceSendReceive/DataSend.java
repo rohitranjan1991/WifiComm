@@ -40,7 +40,7 @@ public class DataSend extends Thread {
 	DatagramSocket dsocket = null;
 	String ip = null;
 	// ///////////////////////////////////////////////////////////////
-	private Handler mainHandler;
+	private Handler baseHandler;
 	HandlerThread handle = new HandlerThread("My Thread");
 	String purpose;
 
@@ -54,11 +54,11 @@ public class DataSend extends Thread {
 	}
 
 	public DataSend(Handler handle, String IP, String purpose) {
-		this.mainHandler = handle;
+		this.baseHandler = handle;
 		this.ip = IP;
 		this.purpose = purpose;
-		Message msg1 = mainHandler.obtainMessage(0, 2, 0, mHandle);
-		mainHandler.sendMessage(msg1);
+		Message msg1 = baseHandler.obtainMessage(0, 2, 0, mHandle);
+		baseHandler.sendMessage(msg1);
 	}
 
 	final Handler mHandle = new Handler() {
@@ -184,7 +184,7 @@ public class DataSend extends Thread {
 					mainHandler.sendMessage(mainHandler.obtainMessage(4,
 							"inform receiver"));
 				}*/
-			mainHandler.sendMessage(mainHandler
+			baseHandler.sendMessage(baseHandler
 					.obtainMessage(3,1,0, report));
 
 			if (socket != null) {
@@ -238,7 +238,7 @@ public class DataSend extends Thread {
 		 */
 		finally {
 			
-			mainHandler.sendMessage(mainHandler
+			baseHandler.sendMessage(baseHandler
 					.obtainMessage(3,2,0, result));
 
 			if (socket != null) {

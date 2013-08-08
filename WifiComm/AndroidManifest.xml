@@ -28,6 +28,14 @@
             android:name="com.wificomm.duringCall.OnCallActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait" />
+        <activity
+            android:name="com.wificomm.initialSettings.InitialSettings"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.wificomm.PrefManager.MenuPreference"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" />
       
         <activity
             android:name="com.wificomm.splashscreen.SplashScreen"

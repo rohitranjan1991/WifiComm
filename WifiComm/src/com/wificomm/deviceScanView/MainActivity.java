@@ -10,6 +10,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -23,6 +24,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.text.format.Formatter;
 import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -39,13 +42,15 @@ import android.widget.Toast;
 
 import com.example.wificomm.CallDisconnect;
 import com.wificomm.R;
+import com.wificomm.PrefManager.Prefs;
+import com.wificomm.PrefManager.MenuPreference;
+import com.wificomm.common.DeviceList;
 import com.wificomm.constants.Constants;
 import com.wificomm.deviceScan.wifiScanReceive;
 import com.wificomm.deviceScan.wifiScanSend;
 import com.wificomm.duringCall.OnCallActivity;
 import com.wificomm.handshake.CallReplyAcceptor;
 import com.wificomm.handshake.CallRequestAcceptor;
-import com.wificomm.storeClasses.DeviceList;
 import com.wificomm.voiceSendReceive.DataSend;
 import com.wificomm.voiceSendReceive.receiveVoice;
 
@@ -55,16 +60,16 @@ public class MainActivity extends Activity implements OnClickListener {
 	// ////////////////////////////////////////
 
 	Button bScan, bIterate;
-	ImageButton bCall, bDisconnect;
+	ImageButton bCall;
 	TextView name, ip;
 	Handler recHandler, sendHandler, CallManage, disCallHandler,
 			scanReceiveHandler = null;
 	Handler callRequestHandler = null, callReply, receiveVoice;
-	EditText et1;
+	TextView displayName;
 	Integer rowNum;
+	private SharedPreferences settings;
 	DataSend send;
 	ProgressDialog progress;
-	private DataSend call;
 	CallRequestAcceptor callReqAcceptor;
 	receiveVoice rVoice;
 	CallManage callManage;
@@ -73,10 +78,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	CallDisconnect callDis;
 	int currentCallerPos = -1;
 	private AudioManager am;
-	private int oldAudioMode;
-	private int oldRingerMode;
-	// public static int callTimeoutTime=10000;
-	private boolean isSpeakerPhoneOn, reply = false;
+	
 
 	private SensorManager mSensorManager;
 	private Boolean CallRequestSent = false;
@@ -103,18 +105,8 @@ public class MainActivity extends Activity implements OnClickListener {
 				case 2:
 					sendHandler = (Handler) msg.obj;
 					break;
-				case 3:
-					CallManage = (Handler) msg.obj;
-					break;
-
 				case 4:
 					callReply = (Handler) msg.obj;
-					break;
-				case 5:
-					receiveVoice = (Handler) msg.obj;
-					break;
-				case 6:
-					disCallHandler = (Handler) msg.obj;
 					break;
 				case 7:
 					scanReceiveHandler = (Handler) msg.obj;
@@ -128,7 +120,7 @@ public class MainActivity extends Activity implements OnClickListener {
 				int ip = wifiInfo.getIpAddress();
 				String ipAddress = Formatter.formatIpAddress(ip);
 				new wifiScanSend(mHandle, "DeviceName : "
-						+ et1.getText().toString() + "|IP : " + ipAddress,
+						+ Prefs.getInstance(settings).fetch("username") + "|IP : " + ipAddress,
 						msg.obj.toString(), "DeviceInfo Sent",
 						"DeviceInfo Not Sent").start();
 
@@ -209,14 +201,27 @@ public class MainActivity extends Activity implements OnClickListener {
 												}
 											}
 											adapter.notifyDataSetChanged();
-											TextView callerName=(TextView)list.getAdapter().getView(currentCallerPos,
-													findViewById(R.layout.row_layout),
-													(ViewGroup) findViewById(R.id.listView1)).findViewById(R.id.topText)
-													.findViewById(R.id.text).findViewById(R.id.nameView).findViewById(R.id.Name);
-											startMainCall(ipCaller, callerName.getText().toString(), Constants.PURPOSE_RECEIVING, "ReplyTrue", 2);
-											/*send = new DataSend(mHandle,
-													ipCaller, "Reply True");
-											send.start();*/
+											TextView callerName = (TextView) list
+													.getAdapter()
+													.getView(
+															currentCallerPos,
+															findViewById(R.layout.row_layout),
+															(ViewGroup) findViewById(R.id.listView1))
+													.findViewById(R.id.topText)
+													.findViewById(R.id.text)
+													.findViewById(R.id.nameView)
+													.findViewById(R.id.Name);
+											startMainCall(
+													ipCaller,
+													callerName.getText()
+															.toString(),
+													Constants.PURPOSE_RECEIVING,
+													"Reply True", 2);
+											/*
+											 * send = new DataSend(mHandle,
+											 * ipCaller, "Reply True");
+											 * send.start();
+											 */
 
 										}
 									})
@@ -237,107 +242,10 @@ public class MainActivity extends Activity implements OnClickListener {
 					timerDelayRemoveDialog(Constants.callTimeoutTime,
 							alertDialog);
 					break;
-
-				case 1:
-					// after call request send
-					// 3,1,0
-					CallRequestSent = msg.obj.toString().contentEquals(
-							"Call Request Sent");
-					if (CallRequestSent) {
-						callRequestHandler.sendMessage(callRequestHandler
-								.obtainMessage(0, "Stop"));
-						callReplyObject = new CallReplyAcceptor(mHandle);
-						callReplyObject.start();
-					}
-
-					break;
-				case 2:
-
-					// from receiver
-					reply = (Boolean) msg.obj;
-
-					if (reply) {
-						// start receiving main call
-						rVoice = new receiveVoice(mHandle, am);
-						rVoice.start();
-						// if call accepted
-						// start sending main call
-						send = new DataSend(mHandle, ipCaller, "Main Call");
-						send.start();
-						// starting CallDisconnector Thread
-						// callDis = new CallDisconnect(mHandle);
-						// callDis.start();
-					} else {// if call rejected
-
-						resetState();
-					}
-
-					break;
-				case 3:
-					// from caller
-
-					reply = (Boolean) msg.obj;
-
-					if (reply) {
-						// start receiving main call
-						rVoice = new receiveVoice(mHandle, am);
-						rVoice.start();
-						// if call accepted
-						// start sending main call
-						send = new DataSend(mHandle, ipToCall, "Main Call");
-						send.start();
-						// starting CallDisconnector Thread
-						// callDis = new CallDisconnect(mHandle);
-						// callDis.start();
-
-					} else {// if call rejected
-
-						resetState();
-					}
-
-					break;
-				case 4:
-					reply = (Boolean) msg.obj;
-
-					if (!reply) {
-						resetState();
-					}
-
-					break;
 				}
 
 				break;
-			case 4:
-				// when call on progress
-				switch (msg.arg1) {
-				case 0:
-					/*
-					 * Boolean disconnect = (Boolean) msg.obj; // String
-					 * ret=msg.obj.toString(); if (disconnect) {
-					 * sendHandler.sendMessage(sendHandler.obtainMessage(0,
-					 * "Stop"));
-					 * receiveVoice.sendMessage(receiveVoice.obtainMessage(0,
-					 * "Stop"));
-					 * connectionrow.findViewById(R.id.bCall).setEnabled(true);
-					 * connectionrow.findViewById(R.id.bDisconnect)
-					 * .setEnabled(false); resetState(); }
-					 */
-
-					break;
-				case 1:
-					try {
-						sendHandler.sendMessage(sendHandler.obtainMessage(0,
-								"Stop"));
-					} catch (Exception e) {
-
-					}
-					myDevices.get(currentCallerPos).setOnCallState(false);
-					// receiveVoice.sendMessage(receiveVoice.obtainMessage(0,"Stop"));
-					adapter.notifyDataSetChanged();
-					resetState();
-					break;
-				}
-				break;
+			
 			case 5:
 				// for wifi scan receive in case of bind Exception
 
@@ -350,7 +258,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
 		}
 	};
-
+	
 	// //////////////////////////////// X-X-X-X
 
 	// ////////////////////////////////////////
@@ -366,6 +274,13 @@ public class MainActivity extends Activity implements OnClickListener {
 	@Override
 	protected void onResume() {
 
+		
+		refreshOnResume();
+		
+		super.onResume();
+	}
+
+	private void refreshOnResume() {
 		if (scanReceiveHandler == null) {
 			new wifiScanReceive(mHandle).start();
 		}
@@ -373,13 +288,18 @@ public class MainActivity extends Activity implements OnClickListener {
 			callReqAcceptor = new CallRequestAcceptor(mHandle);
 			callReqAcceptor.start();
 		}
+		
+		if(Prefs.getInstance(settings).contains("username"))
+		{
+			displayName.setText(Prefs.getInstance(settings).fetch("username"));
+		}
 		try {
 			Thread.sleep(500);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		super.onResume();
+		
 	}
 
 	@Override
@@ -390,7 +310,7 @@ public class MainActivity extends Activity implements OnClickListener {
 					"stopService"));
 			scanReceiveHandler = null;
 		}
-		if (callReqAcceptor != null) {
+		if (callRequestHandler != null) {
 			callRequestHandler.sendMessage(callRequestHandler.obtainMessage(0,
 					"Stop"));
 			callRequestHandler = null;
@@ -416,14 +336,20 @@ public class MainActivity extends Activity implements OnClickListener {
 		// called during onresume Methord
 		// new wifiScanReceive(mHandle).start();
 		// initializing audiomanager
-		
-
+		settings = getSharedPreferences("wificomm", Context.MODE_PRIVATE); 
 		// ///////////////////////////////////list
 		adapter = new MyListAdapter();
 		list = (ListView) findViewById(R.id.listView1);
 		list.setAdapter(adapter);
 		audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-		et1 = (EditText) findViewById(R.id.editText1);
+		displayName = (TextView) findViewById(R.id.displayName);
+		if(Prefs.getInstance(settings).contains("username"))
+		{
+			displayName.setText(Prefs.getInstance(settings).fetch("username"));
+		}
+			
+		
+		
 		/*
 		 * rec = new DataReceive(mHandle); rec.start();
 		 */
@@ -435,13 +361,29 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
+		 MenuInflater menuInflater = getMenuInflater();
+	        menuInflater.inflate(R.layout.menu, menu);
+	        return true;
+		/*getMenuInflater().inflate(R.menu.main, menu);
+		return true;*/
 	}
 
 	// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// adapter
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		
+		  switch (item.getItemId())
+		  {
+		  case R.id.menu_preferences:
+			  Intent intent = new Intent(MainActivity.this, MenuPreference.class);
+			  startActivityForResult(intent, 3);
+			  break;
+		  }
+		  
+		return super.onOptionsItemSelected(item);
+	}
 
 	public class MyListAdapter extends ArrayAdapter<DeviceList> implements
 			OnClickListener {
@@ -468,8 +410,8 @@ public class MainActivity extends Activity implements OnClickListener {
 			name.setText(devList.getName());
 			ip.setText(devList.getIP());
 			bCall = (ImageButton) view.findViewById(R.id.bCall);
-			bDisconnect = (ImageButton) view.findViewById(R.id.bDisconnect);
-			if (devList.onCall()) {
+		
+			/*if (devList.onCall()) {
 				bCall.setEnabled(false);
 				bDisconnect.setEnabled(true);
 				bDisconnect.setClickable(true);
@@ -477,9 +419,9 @@ public class MainActivity extends Activity implements OnClickListener {
 				bCall.setEnabled(true);
 				bDisconnect.setEnabled(false);
 				bDisconnect.setClickable(false);
-			}
+			}*/
 			bCall.setOnClickListener(this);
-			bDisconnect.setOnClickListener(this);
+			
 			return view;
 
 			// return super.getView(position, convertView, parent);
@@ -516,23 +458,19 @@ public class MainActivity extends Activity implements OnClickListener {
 				currentCallerPos = findRow(ipToCall);
 				myDevices.get(currentCallerPos).setOnCallState(true);
 				adapter.notifyDataSetChanged();
-				
-				callRequestHandler.sendMessage(callRequestHandler
-						.obtainMessage(0, "Stop"));
-				callRequestHandler=null;
-				startMainCall(ipToCall, name.getText().toString(), Constants.PURPOSE_CALLING, null, 1);
+
+				/*
+				 * callRequestHandler.sendMessage(callRequestHandler
+				 * .obtainMessage(0, "Stop")); callRequestHandler=null;
+				 */
+				startMainCall(ipToCall, name.getText().toString(),
+						Constants.PURPOSE_CALLING, null, 1);
 				/*
 				 * call = new DataSend(mHandle, ipAddr, "Initiate Call !!");
 				 * call.start();
 				 */
 				break;
-			case R.id.bDisconnect:
-				// disCallHandler.sendMessage(disCallHandler.obtainMessage(0,"Stop"));
-				// sendHandler.sendMessage(sendHandler.obtainMessage(0,
-				// "Stop"));
-				receiveVoice.sendMessage(receiveVoice.obtainMessage(0, "Stop"));
-
-				break;
+			
 			}
 
 		}
@@ -556,9 +494,7 @@ public class MainActivity extends Activity implements OnClickListener {
 				Toast.makeText(this, "Result From Caller : Cancelled",
 						Toast.LENGTH_SHORT).show();
 			}
-		}
-		else if(requestCode == 2)
-		{
+		} else if (requestCode == 2) {
 			if (resultCode == RESULT_OK) {
 				String result = data.getStringExtra("result");
 				myDevices.get(currentCallerPos).setOnCallState(false);
@@ -568,6 +504,19 @@ public class MainActivity extends Activity implements OnClickListener {
 			}
 			if (resultCode == RESULT_CANCELED) {
 				Toast.makeText(this, "Result From Call Receiver : ",
+						Toast.LENGTH_SHORT).show();
+			}
+		}
+		else if (requestCode == 3) {
+			if (resultCode == RESULT_OK) {
+				String result = data.getStringExtra("result");
+				myDevices.get(currentCallerPos).setOnCallState(false);
+				adapter.notifyDataSetChanged();
+				Toast.makeText(this, "Result From Preference Activity: " + result,
+						Toast.LENGTH_SHORT).show();
+			}
+			if (resultCode == RESULT_CANCELED) {
+				Toast.makeText(this, "Result From Preference Activity: Canceled !!",
 						Toast.LENGTH_SHORT).show();
 			}
 		}
@@ -582,7 +531,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
 			ScanDevices();
 
-			break;	
+			break;
 		case R.id.bIterate:
 
 			finish();
@@ -604,7 +553,8 @@ public class MainActivity extends Activity implements OnClickListener {
 						findViewById(R.layout.row_layout),
 						(ViewGroup) findViewById(R.id.listView1));
 				TextView v2 = (TextView) v1.findViewById(R.id.topText)
-						.findViewById(R.id.text).findViewById(R.id.IpView).findViewById(R.id.IPAddress);
+						.findViewById(R.id.text).findViewById(R.id.IpView)
+						.findViewById(R.id.IPAddress);
 
 				// Toast.makeText(this,
 				// "IP Address of the "+i+" row = "+v2.getText(),
@@ -752,23 +702,22 @@ public class MainActivity extends Activity implements OnClickListener {
 		callReqAcceptor.start();
 
 	}
-	
-	public void startMainCall(String callerIp,String name,int purpose,String extraText,int requestcode)
-	{
-		Intent intent = new Intent(MainActivity.this,
-				OnCallActivity.class);
+
+	public void startMainCall(String callerIp, String name, int purpose,
+			String extraText, int requestcode) {
+		Intent intent = new Intent(MainActivity.this, OnCallActivity.class);
 		intent.putExtra("ip", callerIp);
 		intent.putExtra("name", name);
 		intent.putExtra("purpose", purpose);
 		intent.putExtra("extraText", extraText);
 		startActivityForResult(intent, requestcode);
-		
+
 	}
 
 	public void timerDelayRemoveDialog(long time, final Dialog d) {
 		new Handler().postDelayed(new Runnable() {
 			public void run() {
-				resetState();
+				// resetState();
 				d.dismiss();
 			}
 		}, time);

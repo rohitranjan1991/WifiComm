@@ -1,4 +1,4 @@
-package com.wificomm.storeClasses;
+package com.wificomm.common;
 
 public class DeviceList {
 	

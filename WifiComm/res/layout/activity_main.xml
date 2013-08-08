@@ -14,18 +14,25 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
+        android:weightSum="4"
         android:orientation="horizontal" >
 
-        <EditText
-            android:id="@+id/editText1"
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:ems="10"
-            android:hint="Your Name Here..." >
-        </EditText>
+            android:layout_weight="1"
+            android:text="Name : " />
+
+        <TextView
+            android:id="@+id/displayName"
+            android:layout_weight="2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+             />
 
         <Button
             android:id="@+id/bScan"
+            android:layout_weight="1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Scan" />
@@ -39,9 +46,9 @@
 
     <ListView
         android:id="@+id/listView1"
-        android:layout_marginTop="10dp"
         android:layout_width="match_parent"
-        android:layout_height="fill_parent" >
+        android:layout_height="fill_parent"
+        android:layout_marginTop="10dp" >
     </ListView>
 
 </LinearLayout>

@@ -85,13 +85,7 @@
                 android:background="@null"
                 android:src="@drawable/call" />
 
-            <ImageButton
-                android:id="@+id/bDisconnect"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@null"
-                android:src="@drawable/callend"
-                android:visibility="gone" />
+          
         </LinearLayout>
     </LinearLayout>
 

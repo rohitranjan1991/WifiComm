@@ -1,16 +1,11 @@
 package com.wificomm.deviceScan;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
-import android.media.AudioFormat;
-import android.media.AudioRecord;
-import android.media.MediaRecorder.AudioSource;
 import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.Message;
 
 public class wifiScanSend extends Thread {

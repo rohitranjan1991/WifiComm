@@ -9,8 +9,6 @@ import android.media.AudioTrack;
 import android.os.Handler;
 import android.os.Message;
 
-import com.wificomm.deviceScanView.MainActivity;
-
 public class receiveVoice extends Thread {
 
 	private static final int RECORDER_SAMPLERATE = 16000;
@@ -27,14 +25,14 @@ public class receiveVoice extends Thread {
 
 		}
 	};
-	private Handler MainHandler;
+	private Handler baseHandler;
 	private AudioTrack at;
 	private boolean isReceiving = true;
 	private AudioManager am;
 
 	public receiveVoice(Handler MainHandler, AudioManager am) {
 
-		this.MainHandler = MainHandler;
+		this.baseHandler = MainHandler;
 		this.am=am;
 		MainHandler.sendMessage(MainHandler.obtainMessage(0, 5, 0, mHandle));
 	}
@@ -51,13 +49,13 @@ public class receiveVoice extends Thread {
 	}
 
 	public void receiveAndPlayVoice() {
-		am.setMode(AudioManager.MODE_IN_CALL);
+		//am.setMode(AudioManager.MODE_IN_CALL);
 
 		DatagramSocket socket = null;
 		try {
 			socket = new DatagramSocket(7689);
 			byte[] buffer = new byte[intSize];
-			at = new AudioTrack(AudioManager.STREAM_VOICE_CALL, RECORDER_SAMPLERATE,
+			at = new AudioTrack(AudioManager.STREAM_MUSIC, RECORDER_SAMPLERATE,
 					RECORDER_CHANNELS, RECORDER_AUDIO_ENCODING, intSize,
 					AudioTrack.MODE_STREAM);
 
@@ -76,22 +74,21 @@ public class receiveVoice extends Thread {
 						at.write(buffer, 0, buffer.length);
 						at.stop();
 
-					}// end inner if
+					}
 				} catch (Exception e) {
 					isReceiving = false;
 					at.release();
-					// audioManager.setMode(AudioManager.MODE_RINGTONE);
+					
 				}
-				// end of inner buff
-			} // end inner while
+				
+			} 
 			
-			am.setMode(AudioManager.MODE_NORMAL);
+			//am.setMode(AudioManager.MODE_NORMAL);
 			
 			if (!socket.isClosed()) {
 				socket.close();
 				socket = null;
-			}// end if
-				// at.release();
+			}
 
 			at.release();
 		} catch (Exception e) {
@@ -101,9 +98,8 @@ public class receiveVoice extends Thread {
 			}
 			e.printStackTrace();
 		}
-		MainHandler.sendMessage(MainHandler
+		baseHandler.sendMessage(baseHandler
 				.obtainMessage(4, 1, 0, "Disconnect"));
-		// socket.close();
 
 	}
 
