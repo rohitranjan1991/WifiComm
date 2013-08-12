@@ -10,15 +10,22 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.text.format.Formatter;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.wificomm.PrefManager.Prefs;
 import com.wificomm.common.DeviceList;
 import com.wificomm.common.wificommApplication;
 import com.wificomm.constants.Constants;
+import com.wificomm.deviceScan.wifiScanReceive;
+import com.wificomm.deviceScan.wifiScanSend;
 import com.wificomm.duringCall.OnCallActivity;
 import com.wificomm.handshake.CallRequestAcceptor;
 import com.wificomm.incomingcall.IncomingCall;
@@ -26,7 +33,6 @@ import com.wificomm.voiceSendReceive.DataSend;
 
 public class wificommService extends Service {
 
-	
 	private Handler callRequestHandler;
 	private Handler scanReceiveHandler;
 	private CallRequestAcceptor callReqAcceptor;
@@ -34,6 +40,7 @@ public class wificommService extends Service {
 	List<DeviceList> myDevices = new ArrayList<DeviceList>();
 	private DataSend send;
 	private Handler sendHandler;
+	private SharedPreferences settings;
 
 	final Handler mHandle = new Handler() {
 
@@ -55,7 +62,35 @@ public class wificommService extends Service {
 					break;
 				}
 				break;
+			case 1:
 
+				// for wifi scan
+				settings = getSharedPreferences("wificomm",
+						Context.MODE_PRIVATE);
+				WifiManager wifiMgr = (WifiManager) getSystemService(WIFI_SERVICE);
+				WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
+				int ip = wifiInfo.getIpAddress();
+				String ipAddress = Formatter.formatIpAddress(ip);
+				new wifiScanSend(mHandle, "DeviceName : "
+						+ Prefs.getInstance(settings).fetch("username")
+						+ "|IP : " + ipAddress, msg.obj.toString(),
+						"DeviceInfo Sent", "DeviceInfo Not Sent").start();
+
+				break;
+			case 2:
+				// for wifi scan
+				String[] separated = msg.obj.toString().split("\\|");
+				String name = separated[0].substring(13, separated[0].length())
+						.trim();
+				String ipAddr = separated[1].substring(5,
+						separated[1].length()).trim();
+				if(!hasDevice(ipAddr))
+				{myDevices.add(new DeviceList(name, ipAddr));
+				wificommApplication.getInstance().setMyDevices(myDevices);
+				}
+				sendBroadcast(Constants.MSG_UPDATE_LIST);
+				
+				break;
 			case 3:
 
 				switch (msg.arg1) {
@@ -64,68 +99,50 @@ public class wificommService extends Service {
 					// from the call receiver side
 					ipCaller = msg.obj.toString();
 					callReqAcceptor = null;
-					
-					startIncommingCall(
-							ipCaller,
-							getDeviceName(ipCaller)
-									.toString(),
-							Constants.PURPOSE_RECEIVING,
+
+					startIncommingCall(ipCaller, getDeviceName(ipCaller)
+							.toString(), Constants.PURPOSE_RECEIVING,
 							"Reply True");
-					
-					/*AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
-							getApplicationContext());
 
-					// set title
-					alertDialogBuilder.setTitle("Incoming Call");
-
-					// set dialog message
-					alertDialogBuilder
-
-							.setMessage("Call From " + ipCaller)
-							.setCancelable(false)
-							.setPositiveButton("Pick Up!!",
-									new DialogInterface.OnClickListener() {
-										public void onClick(
-												DialogInterface dialog, int id) {
-
-											startMainCall(
-													ipCaller,
-													getDeviceName(ipCaller)
-															.toString(),
-													Constants.PURPOSE_RECEIVING,
-													"Reply True");
-
-											
-											 * send = new DataSend(mHandle,
-											 * ipCaller, "Reply True");
-											 * send.start();
-											 
-
-										}
-									})
-							.setNegativeButton("Or Not!!",
-									new DialogInterface.OnClickListener() {
-
-										public void onClick(
-												DialogInterface dialog, int id) {
-											send = new DataSend(mHandle,
-													ipCaller, "Reply False");
-											send.start();
-											dialog.cancel();
-											startCallAcceptor();
-										}
-									});
-					
-					// create alert dialog
-					AlertDialog alertDialog = alertDialogBuilder.create();
-					alertDialog.show();
-					timerDelayRemoveDialog(Constants.callTimeoutTime,
-							alertDialog);*/
+					/*
+					 * AlertDialog.Builder alertDialogBuilder = new
+					 * AlertDialog.Builder( getApplicationContext());
+					 * 
+					 * // set title
+					 * alertDialogBuilder.setTitle("Incoming Call");
+					 * 
+					 * // set dialog message alertDialogBuilder
+					 * 
+					 * .setMessage("Call From " + ipCaller)
+					 * .setCancelable(false) .setPositiveButton("Pick Up!!", new
+					 * DialogInterface.OnClickListener() { public void onClick(
+					 * DialogInterface dialog, int id) {
+					 * 
+					 * startMainCall( ipCaller, getDeviceName(ipCaller)
+					 * .toString(), Constants.PURPOSE_RECEIVING, "Reply True");
+					 * 
+					 * 
+					 * send = new DataSend(mHandle, ipCaller, "Reply True");
+					 * send.start();
+					 * 
+					 * 
+					 * } }) .setNegativeButton("Or Not!!", new
+					 * DialogInterface.OnClickListener() {
+					 * 
+					 * public void onClick( DialogInterface dialog, int id) {
+					 * send = new DataSend(mHandle, ipCaller, "Reply False");
+					 * send.start(); dialog.cancel(); startCallAcceptor(); } });
+					 * 
+					 * // create alert dialog AlertDialog alertDialog =
+					 * alertDialogBuilder.create(); alertDialog.show();
+					 * timerDelayRemoveDialog(Constants.callTimeoutTime,
+					 * alertDialog);
+					 */
 					break;
 				}
 
 				break;
-				
+
 			case 5:
 				// for wifi scan receive in case of bind Exception
 
@@ -152,8 +169,18 @@ public class wificommService extends Service {
 			if (device.getIP().contentEquals(ip))
 				return device.getName();
 		}
-		
+
 		return "Unknown";
+	}
+	private Boolean hasDevice(String ip) {
+		myDevices = wificommApplication.getInstance().getMyDevices();
+		Iterator<DeviceList> iterator = myDevices.iterator();
+		for (DeviceList device : myDevices) {
+			if (device.getIP().contentEquals(ip))
+				return true;
+		}
+
+		return false;
 	}
 
 	private BroadcastReceiver serviceReceiver = new BroadcastReceiver() {
@@ -168,13 +195,12 @@ public class wificommService extends Service {
 							"Result = " + intent.getIntExtra("result", -1),
 							Toast.LENGTH_SHORT).show();
 					startCallAcceptor();
-				}
-				else if(intent.getStringExtra("activity").contentEquals("IncomingCall"))
-				{
+				} else if (intent.getStringExtra("activity").contentEquals(
+						"IncomingCall")) {
 					startCallAcceptor();
 				}
 			}
-			
+
 			/*
 			 * Toast.makeText(getApplicationContext(),
 			 * "received message in service..!", Toast.LENGTH_SHORT) .show();
@@ -195,11 +221,12 @@ public class wificommService extends Service {
 		super.onCreate();
 		Log.d("Service", "onCreate");
 		if (serviceReceiver != null) {
-			IntentFilter intentFilter = new IntentFilter(Constants.ACTION_STRING_SERVICE);
+			IntentFilter intentFilter = new IntentFilter(
+					Constants.ACTION_STRING_SERVICE);
 
 			registerReceiver(serviceReceiver, intentFilter);
 		}
-
+		startDeviceScan();
 		startCallAcceptor();
 
 	}
@@ -212,14 +239,15 @@ public class wificommService extends Service {
 				"Stop"));
 		callRequestHandler = null;
 		unregisterReceiver(serviceReceiver);
-		
-		Toast.makeText(getApplicationContext(), "Service Destroyed", Toast.LENGTH_SHORT).show();
+
+		Toast.makeText(getApplicationContext(), "Service Destroyed",
+				Toast.LENGTH_SHORT).show();
 	}
 
-	private void sendBroadcast() {
+	private void sendBroadcast(int message) {
 		Intent new_intent = new Intent();
 		new_intent.setAction(Constants.ACTION_STRING_ACTIVITY);
-		// new_intent.putExtra(name, value)
+		new_intent.putExtra("message", message);
 		sendBroadcast(new_intent);
 	}
 
@@ -239,27 +267,25 @@ public class wificommService extends Service {
 		new Handler().postDelayed(new Runnable() {
 			public void run() {
 
-				
 				d.dismiss();
 			}
 		}, time);
 	}
-	
-	public void startCallAcceptor()
-	{
-		if(callReqAcceptor==null)
-		{
+
+	public void startCallAcceptor() {
+		if (callReqAcceptor == null) {
 			callReqAcceptor = new CallRequestAcceptor(mHandle);
 			callReqAcceptor.start();
 		}
 	}
-	
 
-	
+	public void startDeviceScan() {
+		new wifiScanReceive(mHandle).start();
+	}
+
 	public void startIncommingCall(String callerIp, String name, int purpose,
 			String extraText) {
-		Intent intent = new Intent(getApplicationContext(),
-				IncomingCall.class);
+		Intent intent = new Intent(getApplicationContext(), IncomingCall.class);
 		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		intent.putExtra("ip", callerIp);
 		intent.putExtra("name", name);

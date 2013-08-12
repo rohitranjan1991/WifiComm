@@ -103,6 +103,15 @@ public class MainActivity extends Activity implements OnClickListener {
 	        @Override
 	        public void onReceive(Context context, Intent intent) {
 	            Toast.makeText(getApplicationContext(), "received message in activity..!", Toast.LENGTH_SHORT).show();
+	            
+	            if (intent.hasExtra("message")) {
+					if (intent.getIntExtra("message",-1)==Constants.MSG_UPDATE_LIST) {
+						
+						adapter.notifyDataSetChanged();
+					//	startCallAcceptor();
+					}
+				}
+
 	        }
 	    };
 	
@@ -172,7 +181,7 @@ public class MainActivity extends Activity implements OnClickListener {
 				wificommApplication.getInstance().setMyDevices(myDevices);
 				break;
 
-			case 3:
+			/*case 3:
 
 				switch (msg.arg1) {
 				case 0:
@@ -253,11 +262,11 @@ public class MainActivity extends Activity implements OnClickListener {
 															.toString(),
 													Constants.PURPOSE_RECEIVING,
 													"Reply True", 2);
-											/*
+											
 											 * send = new DataSend(mHandle,
 											 * ipCaller, "Reply True");
 											 * send.start();
-											 */
+											 
 
 										}
 									})
@@ -280,7 +289,7 @@ public class MainActivity extends Activity implements OnClickListener {
 					break;
 				}
 
-				break;
+				break;*/
 			
 			case 5:
 				// for wifi scan receive in case of bind Exception
@@ -318,7 +327,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	private void refreshOnResume() {
 		if (scanReceiveHandler == null) {
-			new wifiScanReceive(mHandle).start();
+			//new wifiScanReceive(mHandle).start();
 		}
 		if (callRequestHandler == null) {
 			/*callReqAcceptor = new CallRequestAcceptor(mHandle);
@@ -353,9 +362,9 @@ public class MainActivity extends Activity implements OnClickListener {
 	protected void onPause() {
 
 		if (scanReceiveHandler != null) {
-			scanReceiveHandler.sendMessage(scanReceiveHandler.obtainMessage(0,
+		/*	scanReceiveHandler.sendMessage(scanReceiveHandler.obtainMessage(0,
 					"stopService"));
-			scanReceiveHandler = null;
+			scanReceiveHandler = null;*/
 		}
 		if (callRequestHandler != null) {
 			/*callRequestHandler.sendMessage(callRequestHandler.obtainMessage(0,
@@ -452,7 +461,7 @@ public class MainActivity extends Activity implements OnClickListener {
 						false);
 			}
 
-			DeviceList devList = myDevices.get(position);
+			DeviceList devList = wificommApplication.getInstance().getMyDevices().get(position);
 			name = (TextView) view.findViewById(R.id.Name);
 			ip = (TextView) view.findViewById(R.id.IPAddress);
 			name.setText(devList.getName());
@@ -483,7 +492,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		@Override
 		public int getCount() {
 			// TODO Auto-generated method stub
-			return myDevices.size();
+			return wificommApplication.getInstance().getMyDevices().size();
 		}
 
 		public MyListAdapter() {
@@ -504,7 +513,8 @@ public class MainActivity extends Activity implements OnClickListener {
 			switch (v.getId()) {
 			case R.id.bCall:
 				currentCallerPos = findRow(ipToCall);
-				myDevices.get(currentCallerPos).setOnCallState(true);
+				
+				wificommApplication.getInstance().getMyDevices().get(currentCallerPos).setOnCallState(true);
 				adapter.notifyDataSetChanged();
 
 				/*
@@ -543,6 +553,7 @@ public class MainActivity extends Activity implements OnClickListener {
 				String result = data.getStringExtra("result");
 				myDevices.get(currentCallerPos).setOnCallState(false);
 				adapter.notifyDataSetChanged();
+				
 				Toast.makeText(this, "Result From Caller : " + result,
 						Toast.LENGTH_SHORT).show();
 			}
@@ -590,7 +601,8 @@ public class MainActivity extends Activity implements OnClickListener {
 			break;
 		case R.id.bIterate:
 
-			stopService(serviceIntent);
+			adapter.clear();	
+			//stopService(serviceIntent);
 			//sendBroadcast();
 
 			break;

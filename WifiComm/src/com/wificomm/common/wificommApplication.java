@@ -20,6 +20,7 @@ public class wificommApplication {
 	public List<DeviceList> getMyDevices() {
 		return myDevices;
 	}
+	
 	public void setMyDevices(List<DeviceList> myDevices) {
 		this.myDevices = myDevices;
 	}

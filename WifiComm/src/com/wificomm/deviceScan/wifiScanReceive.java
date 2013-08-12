@@ -13,7 +13,7 @@ import android.util.Log;
 
 public class wifiScanReceive extends Thread {
 
-	private static Handler mainHandler;
+	private static Handler baseHandler;
 	private String temp = "";
 	private ServerSocket serverSocket = null;
 	private static Boolean scanReceive=true;
@@ -28,17 +28,17 @@ public class wifiScanReceive extends Thread {
 		@Override
 		public void handleMessage(Message msg) {
 			if (msg.obj.toString().contentEquals("DeviceInfo Not Sent")) {
-				Message msgToSend = mainHandler.obtainMessage(0,
+				Message msgToSend = baseHandler.obtainMessage(0,
 						msg.obj.toString());
-				mainHandler.sendMessage(msgToSend);
+				baseHandler.sendMessage(msgToSend);
 			} else if (msg.obj.toString().contentEquals("DeviceInfo Sent")) {
-				Message msgToSend = mainHandler.obtainMessage(0,
+				Message msgToSend = baseHandler.obtainMessage(0,
 						msg.obj.toString());
-				mainHandler.sendMessage(msgToSend);
+				baseHandler.sendMessage(msgToSend);
 			} else if (msg.obj.toString().contains("DeviceName")) {
-				Message msgToSend = mainHandler.obtainMessage(0,
+				Message msgToSend = baseHandler.obtainMessage(0,
 						msg.obj.toString());
-				mainHandler.sendMessage(msgToSend);
+				baseHandler.sendMessage(msgToSend);
 			}else if (msg.obj.toString().contains("stopService"))
 			{
 				scanReceive=false;
@@ -49,8 +49,8 @@ public class wifiScanReceive extends Thread {
 	};
 
 	public wifiScanReceive(Handler handle) {
-		this.mainHandler = handle;
-		mainHandler.sendMessage(mainHandler.obtainMessage(0, 7, 0, rHandle));
+		this.baseHandler = handle;
+		baseHandler.sendMessage(baseHandler.obtainMessage(0, 7, 0, rHandle));
 
 	}
 
@@ -79,13 +79,13 @@ public class wifiScanReceive extends Thread {
 					if (res.contentEquals("DeviceInfo request")) {
 						InetAddress addr = client.getInetAddress();
 
-						Message msg = mainHandler.obtainMessage(1,
+						Message msg = baseHandler.obtainMessage(1,
 								addr.getHostAddress());
-						mainHandler.sendMessage(msg);
+						baseHandler.sendMessage(msg);
 
 					} else if (res.contains("DeviceName : ")) {
-						Message msg = mainHandler.obtainMessage(2, res.trim());
-						mainHandler.sendMessage(msg);
+						Message msg = baseHandler.obtainMessage(2, res.trim());
+						baseHandler.sendMessage(msg);
 					}
 
 					// if end
@@ -93,8 +93,8 @@ public class wifiScanReceive extends Thread {
 
 			} catch (Exception e) {
 				Log.e("Error from wifiScanReceive : ", e.getLocalizedMessage());
-				Message msg = mainHandler.obtainMessage(5, "Bing Exception");
-				mainHandler.sendMessage(msg);
+				Message msg = baseHandler.obtainMessage(5, "Bing Exception");
+				baseHandler.sendMessage(msg);
 				scanReceive=false;
 
 			} finally {

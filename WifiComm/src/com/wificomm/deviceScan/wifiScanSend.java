@@ -11,7 +11,7 @@ import android.os.Message;
 public class wifiScanSend extends Thread {
 
 	private String message;
-	private Handler mainHandler;
+	private Handler baseHandler;
 	private String initAddress;
 	private String report;
 	private String msgToReport;
@@ -23,7 +23,7 @@ public class wifiScanSend extends Thread {
 	}
 
 	public wifiScanSend(Handler handle, String msg,String initAddress,String successMessage,String failureMessage) {
-		this.mainHandler = handle;
+		this.baseHandler = handle;
 		this.message = msg;
 		this.initAddress=initAddress;
 		this.successMessage=successMessage;
@@ -77,8 +77,8 @@ public class wifiScanSend extends Thread {
 		 * occurred.
 		 */
 		finally {
-			Message msg = mainHandler.obtainMessage(0, report);
-		    mainHandler.sendMessage(msg);
+			Message msg = baseHandler.obtainMessage(0, report);
+		    baseHandler.sendMessage(msg);
 			if (socket != null) {
 				if (socket.isConnected()) {
 					try {
