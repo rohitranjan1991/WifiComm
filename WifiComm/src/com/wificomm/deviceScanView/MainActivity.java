@@ -79,6 +79,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	CallManage callManage;
 	View connectionrow;
 	String ipToCall, ipCaller;
+	Intent serviceIntent;
 	CallDisconnect callDis;
 	int currentCallerPos = -1;
 	private AudioManager am;
@@ -336,7 +337,8 @@ public class MainActivity extends Activity implements OnClickListener {
 	            registerReceiver(activityReceiver, intentFilter);
 			
 	        }
-		 startService(new Intent(this,wificommService.class));
+		 serviceIntent=new Intent(this,wificommService.class);
+		 startService(serviceIntent);
 		
 		try {
 			Thread.sleep(500);
@@ -361,6 +363,7 @@ public class MainActivity extends Activity implements OnClickListener {
 			callRequestHandler = null;*/
 		}
 		active=false;
+		unregisterReceiver(activityReceiver);
 		try {
 			Thread.sleep(500);
 		} catch (InterruptedException e) {
@@ -587,7 +590,8 @@ public class MainActivity extends Activity implements OnClickListener {
 			break;
 		case R.id.bIterate:
 
-			sendBroadcast();
+			stopService(serviceIntent);
+			//sendBroadcast();
 
 			break;
 

@@ -94,6 +94,9 @@ public class CallReplyAcceptor extends Thread{
 			}
 			//Log.e("Error from CallReplyAcceptor : ", e1.getLocalizedMessage());
 		}
+		finally{
+			
+		}
 		baseHandler.sendMessage(baseHandler.obtainMessage(3, 4, 0, false));
 		return false;
 		

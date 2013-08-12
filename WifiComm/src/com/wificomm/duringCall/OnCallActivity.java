@@ -39,8 +39,7 @@ public class OnCallActivity extends Activity implements OnClickListener {
 	private Handler callReplyHandler;
 	private Handler receiveVoiceHandler;
 	private Handler callManageHandler;
-	private static final String ACTION_STRING_SERVICE = "ToService";
-    private static final String ACTION_STRING_ACTIVITY = "ToActivity";
+	
 	
 	public OnCallActivity() {
 		am=null;
@@ -169,7 +168,7 @@ public class OnCallActivity extends Activity implements OnClickListener {
 				
 			case 4:
 				// when call on progress
-				//4,0,0
+				//4,1,0
 				switch (msg.arg1) {
 				
 				case 1:
@@ -177,7 +176,7 @@ public class OnCallActivity extends Activity implements OnClickListener {
 						sendHandler.sendMessage(sendHandler.obtainMessage(0,
 								"Stop"));
 					} catch (Exception e) {
-						Log.e("Error from sendHandler while disconnecting the call : ", e.getLocalizedMessage());
+						//	Log.e("Error from sendHandler while disconnecting the call : ", e.getLocalizedMessage());
 					}
 					resetState(Constants.CALL_DISCONNECTED);
 					break;
@@ -286,7 +285,8 @@ public class OnCallActivity extends Activity implements OnClickListener {
 		{
 		case R.id.bDisconnectCall:
 			if(receiveVoiceHandler!=null)
-				receiveVoiceHandler.sendMessage(receiveVoiceHandler.obtainMessage(0, "Stop"));
+			{	receiveVoiceHandler.sendMessage(receiveVoiceHandler.obtainMessage(0, "Stop"));
+			resetState(Constants.CALL_DISCONNECTED);}
 			else
 				resetState(99);
 			
@@ -298,13 +298,14 @@ public class OnCallActivity extends Activity implements OnClickListener {
 		//reset view also of mainactivity
 		
 		 Intent returnIntent = new Intent();
-		 returnIntent.setAction(ACTION_STRING_SERVICE);
+		 returnIntent.setAction(Constants.ACTION_STRING_SERVICE);
 		 returnIntent.putExtra("activity","OnCallActivity");
 		 returnIntent.putExtra("purpose",purpose);
 		 returnIntent.putExtra("result",reason);
-		// setResult(RESULT_OK,returnIntent);     
-		// finish();
 		 sendBroadcast(returnIntent);
+		// setResult(RESULT_OK,returnIntent);     
+		 finish();
+		 
 	        
 	        
 		

@@ -4,12 +4,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Handler;
@@ -21,15 +19,14 @@ import android.widget.Toast;
 import com.wificomm.common.DeviceList;
 import com.wificomm.common.wificommApplication;
 import com.wificomm.constants.Constants;
-import com.wificomm.deviceScanView.MainActivity;
 import com.wificomm.duringCall.OnCallActivity;
 import com.wificomm.handshake.CallRequestAcceptor;
+import com.wificomm.incomingcall.IncomingCall;
 import com.wificomm.voiceSendReceive.DataSend;
 
 public class wificommService extends Service {
 
-	private static final String ACTION_STRING_SERVICE = "ToService";
-	private static final String ACTION_STRING_ACTIVITY = "ToActivity";
+	
 	private Handler callRequestHandler;
 	private Handler scanReceiveHandler;
 	private CallRequestAcceptor callReqAcceptor;
@@ -67,7 +64,15 @@ public class wificommService extends Service {
 					// from the call receiver side
 					ipCaller = msg.obj.toString();
 					callReqAcceptor = null;
-					AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+					
+					startIncommingCall(
+							ipCaller,
+							getDeviceName(ipCaller)
+									.toString(),
+							Constants.PURPOSE_RECEIVING,
+							"Reply True");
+					
+					/*AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
 							getApplicationContext());
 
 					// set title
@@ -90,11 +95,11 @@ public class wificommService extends Service {
 													Constants.PURPOSE_RECEIVING,
 													"Reply True");
 
-											/*
+											
 											 * send = new DataSend(mHandle,
 											 * ipCaller, "Reply True");
 											 * send.start();
-											 */
+											 
 
 										}
 									})
@@ -115,7 +120,7 @@ public class wificommService extends Service {
 					AlertDialog alertDialog = alertDialogBuilder.create();
 					alertDialog.show();
 					timerDelayRemoveDialog(Constants.callTimeoutTime,
-							alertDialog);
+							alertDialog);*/
 					break;
 				}
 
@@ -164,7 +169,12 @@ public class wificommService extends Service {
 							Toast.LENGTH_SHORT).show();
 					startCallAcceptor();
 				}
+				else if(intent.getStringExtra("activity").contentEquals("IncomingCall"))
+				{
+					startCallAcceptor();
+				}
 			}
+			
 			/*
 			 * Toast.makeText(getApplicationContext(),
 			 * "received message in service..!", Toast.LENGTH_SHORT) .show();
@@ -185,7 +195,7 @@ public class wificommService extends Service {
 		super.onCreate();
 		Log.d("Service", "onCreate");
 		if (serviceReceiver != null) {
-			IntentFilter intentFilter = new IntentFilter(ACTION_STRING_SERVICE);
+			IntentFilter intentFilter = new IntentFilter(Constants.ACTION_STRING_SERVICE);
 
 			registerReceiver(serviceReceiver, intentFilter);
 		}
@@ -202,11 +212,13 @@ public class wificommService extends Service {
 				"Stop"));
 		callRequestHandler = null;
 		unregisterReceiver(serviceReceiver);
+		
+		Toast.makeText(getApplicationContext(), "Service Destroyed", Toast.LENGTH_SHORT).show();
 	}
 
 	private void sendBroadcast() {
 		Intent new_intent = new Intent();
-		new_intent.setAction(ACTION_STRING_ACTIVITY);
+		new_intent.setAction(Constants.ACTION_STRING_ACTIVITY);
 		// new_intent.putExtra(name, value)
 		sendBroadcast(new_intent);
 	}
@@ -240,6 +252,21 @@ public class wificommService extends Service {
 			callReqAcceptor = new CallRequestAcceptor(mHandle);
 			callReqAcceptor.start();
 		}
+	}
+	
+
+	
+	public void startIncommingCall(String callerIp, String name, int purpose,
+			String extraText) {
+		Intent intent = new Intent(getApplicationContext(),
+				IncomingCall.class);
+		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		intent.putExtra("ip", callerIp);
+		intent.putExtra("name", name);
+		intent.putExtra("purpose", purpose);
+		intent.putExtra("extraText", extraText);
+		startActivity(intent);
+
 	}
 
 }

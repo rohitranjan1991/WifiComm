@@ -14,7 +14,7 @@ public class CallRequestAcceptor extends Thread{
 
 	
 	
-	Handler MainHandler;
+	Handler baseHandler;
 
 	final Handler mHandle = new Handler() {
 		@Override
@@ -43,7 +43,7 @@ public class CallRequestAcceptor extends Thread{
 	
 
 	public CallRequestAcceptor(Handler baseHandler) {
-		this.MainHandler=baseHandler;
+		this.baseHandler=baseHandler;
 		baseHandler.sendMessage(baseHandler.obtainMessage(0, 1, 0, mHandle));
 		
 	}
@@ -80,7 +80,7 @@ public class CallRequestAcceptor extends Thread{
 					serverSocket.close();
 					serverSocket=null;
 					
-					MainHandler.sendMessage(MainHandler.obtainMessage(3,0,0,ReceiverIP));
+					baseHandler.sendMessage(baseHandler.obtainMessage(3,0,0,ReceiverIP));
 					//waitForReply=true;
 					return true;
 
@@ -91,8 +91,8 @@ public class CallRequestAcceptor extends Thread{
 		} catch (Exception e1) {
 			
 			Log.e("Erroe From CallrequestAcceptor ",e1.getLocalizedMessage());
-			Message msg = MainHandler.obtainMessage(5, "Bing Exception");
-			MainHandler.sendMessage(msg);
+			Message msg = baseHandler.obtainMessage(5, "Bing Exception");
+			baseHandler.sendMessage(msg);
 		}
 		if(serverSocket!=null)
 			try {

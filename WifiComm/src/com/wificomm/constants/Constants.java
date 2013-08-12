@@ -17,6 +17,8 @@ public class Constants {
 	public static final int PREF_TYPE_FLOAT = 10;
 	public static final int PREF_TYPE_LONG = 11;
 	public static final int PREF_TYPE_STRING_SET = 12;
+	public static final String ACTION_STRING_SERVICE = "ToService";
+	public static final String ACTION_STRING_ACTIVITY = "ToActivity";
 	
 	/*public static Constants instance=null;
 	
