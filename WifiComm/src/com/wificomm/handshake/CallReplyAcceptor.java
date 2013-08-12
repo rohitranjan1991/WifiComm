@@ -73,8 +73,10 @@ public class CallReplyAcceptor extends Thread{
 					//ReceiverIP = client.getInetAddress().getHostAddress();
 					serverSocket.close();
 					client.close();
-					
-					baseHandler.sendMessage(baseHandler.obtainMessage(3, 3, 0, true));
+					if(res.contentEquals("Reply true"))
+						baseHandler.sendMessage(baseHandler.obtainMessage(3, 3, 0, true));
+					else if(res.contentEquals("Reply false"))
+						baseHandler.sendMessage(baseHandler.obtainMessage(3, 3, 0, false));
 
 					return true;
 

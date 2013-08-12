@@ -42,6 +42,12 @@ public class wificommService extends Service {
 	private Handler sendHandler;
 	private SharedPreferences settings;
 
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		
+		return START_STICKY;
+	}
+
 	final Handler mHandle = new Handler() {
 
 		@Override
@@ -198,6 +204,8 @@ public class wificommService extends Service {
 				} else if (intent.getStringExtra("activity").contentEquals(
 						"IncomingCall")) {
 					startCallAcceptor();
+					
+					
 				}
 			}
 

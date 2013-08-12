@@ -13,6 +13,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.wificomm.R;
 import com.wificomm.constants.Constants;
@@ -250,7 +251,7 @@ public class OnCallActivity extends Activity implements OnClickListener {
 		}
 		resetState(Constants.CALL_ACITIVITY_FOCOUS_LOST);
 		try {
-			Thread.sleep(1000);
+			Thread.sleep(500);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -303,6 +304,8 @@ public class OnCallActivity extends Activity implements OnClickListener {
 		 returnIntent.putExtra("purpose",purpose);
 		 returnIntent.putExtra("result",reason);
 		 sendBroadcast(returnIntent);
+		 
+		 Toast.makeText(this, "reasonasdadsasdasd = "+reason, Toast.LENGTH_SHORT).show();
 		// setResult(RESULT_OK,returnIntent);     
 		 finish();
 		 
